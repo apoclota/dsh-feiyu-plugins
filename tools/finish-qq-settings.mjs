@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+const root = 'C:/Users/26102/.dsh';
+const persona = fs.readFileSync('Z:/肥鱼的一生0.1/小渊人设-自然成长版.txt','utf8').trim();
+const soulPath = root + '/soul-config.json';
+const soul = JSON.parse(fs.readFileSync(soulPath,'utf8'));
+soul.customInstructions = persona;
+if (soul.personas?.['大肥鱼']) soul.personas['大肥鱼'].customInstructions = persona;
+for (const scope of Object.values(soul.workspaces?.scopes || {})) if (scope.__persona === '大肥鱼') scope.customInstructions = persona;
+const path = root + '/profiles/desktop/cordis.patch.yml';
+let patch = fs.readFileSync(path,'utf8');
+const matches = patch.match(/^    personaOverrides: .*$/gm) || [];
+if (matches.length !== 1) throw Error('personaOverrides must be unique');
+patch = patch.replace(/^    personaOverrides: .*\r?\n(?:      .*\r?\n)*/m, '    personaOverrides: ' + JSON.stringify('private:0000000000=' + persona.replace(/\r?\n+/g,' ')) + '\n');
+if (!patch.includes('    reconnectMaxAttempts: 3')) throw Error('Reconnect limit missing');
+fs.writeFileSync(soulPath, JSON.stringify(soul,null,2)+'\n');
+fs.writeFileSync(path,patch);
+console.log('Persona synchronized; reconnect limit 3 retained.');

@@ -1,0 +1,38 @@
+{
+  "name": "dsh-whale-bridge",
+  "version": "0.2.0",
+  "description": "把本地「数字生命卡」接进 DSH：长期记忆的取用与写回，按会话白名单挂载。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/card.js",
+    "lib/scope.mjs",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "memory",
+    "life-card"
+  ]
+}

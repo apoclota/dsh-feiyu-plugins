@@ -1,0 +1,12 @@
+{
+  "name": "dsh-fish-growth-settings",
+  "version": "0.1.0",
+  "description": "鱼的成长设置页（独立可选前端插件）",
+  "license": "MIT",
+  "type": "module",
+  "main": "./client.js",
+  "exports": { ".": "./client.js", "./package.json": "./package.json" },
+  "files": ["client.js", "README.md"],
+  "dsh": { "client": { "platform": "web", "inject": ["slots"] } },
+  "engines": { "node": ">=22", "dsh": ">=0.2.1-rc.2" }
+}
