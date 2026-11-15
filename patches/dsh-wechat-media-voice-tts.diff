@@ -1,0 +1,12 @@
+--- a/node_modules/dsh-wechat-media/voice.js
++++ b/node_modules/dsh-wechat-media/voice.js
+@@ -59,7 +59,8 @@ export const DEFAULT_FFPROBE = "ffprobe";
+  * Optional external voice engine: "python.exe Z:\feiyu\say.py". It is called as
+  * `<command> <out.mp3> <text-file>` and must write the audio file itself; when set, SAPI is not used.
+  */
+-export const DEFAULT_TTS_CMD = String(process.env.DSH_TTS_CMD ?? "").trim();
++// 本机 9880 的「小渊」音色优先于 Windows SAPI：见 tools/tts-9880.mjs
++export const DEFAULT_TTS_CMD = String(process.env.DSH_TTS_CMD ?? "").trim() || "node <你的仓库路径>/tools/tts-9880.mjs";
+ 
+ /**
+  * The formats a chat accepts, best first.
