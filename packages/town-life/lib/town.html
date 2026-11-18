@@ -325,15 +325,16 @@ function draw(){
  d.append(el('small',places[blocks[place.id]]||'街区'),el('h2',place.name),el('p',place.description||''))
  statusStrip(d,place)
  planBox(d,place)
+ {const hv=state.hours&&state.hours[place.id];if(hv)d.append(el('p','🕘 '+hv.label+(hv.isOpen&&!hv.always?'（'+hv.openText+'–'+hv.closeText+'）':'')))}
  const inside=place.id===here&&!trip
  if(!roomOpen){d.append(button('查看'+(place.id==='moonlake-park'?'湖岸亭':'室内'),()=>select(place.id,true)))}
   else {d.append(el('p',place.interior?.detail||''));if(place.id==='fish-home'){drawHome(place,inside);homePanel(d,place,inside);return}drawRoom(place,inside)}
  function control(label,kind,extra={}){const b=button(label,()=>run({id:place.id,kind,...extra}));b.disabled=busy;return b}
- if(!inside && !state.travel?.inProgress){const travelBox=el('div','');travelBox.className='choices';const walk=control('步行进入 · '+(place.walkMinutes||0)+' 分钟','travel',{mode:'walk'});walk.className='primary';travelBox.append(walk);if(place.transitMinutes){travelBox.append(control('交通到达 · '+place.transitMinutes+' 分钟','travel',{mode:'transit'}))}d.append(travelBox)} else if(state.travel?.inProgress){d.append(el('p',`正在前往${locs.find(p=>p.id===state.travel.inProgress.to)?.name||'目的地'}，请等待行程完成。`))}
+ if(!inside && !state.travel?.inProgress){const travelBox=el('div','');travelBox.className='choices';const walk=control('步行进入 · '+(place.walkMinutes||0)+' 分钟','travel',{mode:'walk'});walk.className='primary';travelBox.append(walk);if(place.transitMinutes){const tb=control('交通到达 · '+place.transitMinutes+' 分钟','travel',{mode:'transit'});if(state.openHours&&state.openHours['oakbrook-station']===false){tb.disabled=true;tb.textContent='车站已收班 · 只能走'}travelBox.append(tb)}d.append(travelBox)} else if(state.travel?.inProgress){d.append(el('p',`正在前往${locs.find(p=>p.id===state.travel.inProgress.to)?.name||'目的地'}，请等待行程完成。`))}
  else {const group=el('div','');group.className='choices';for(const action of activities[here]||['在附近走走'])group.append(control(action,'act',{action}));d.append(group)}
  if(false){const home=el('div','');home.className='choices';if(place.id==='fish-home'){const decorItems=(state.inventory||[]).filter(x=>x.decor||/灯|架|漆|盆栽|花瓶|长凳|围巾|台灯|邮票/.test(x.name||''));if(decorItems.length){home.append(el('strong','自由布置小屋'));for(const item of decorItems.slice(-6)){const row=el('div','');row.className='row';row.append(el('span',item.name));row.append(control('放到书桌','decorate',{item:item.id,room:'小书桌与日记本',x:35,y:45,rotation:0}));row.append(control('放到窗边','decorate',{item:item.id,room:'收藏瓶与窗边花盆',x:70,y:35,rotation:0}));home.append(row)}}}d.append(home)}
   const shop=state.shops?.find(s=>(s.locationId||s.id)===place.id)
- if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='goods-row';row.append(spriteEl(item.sprite||spriteGuess(item.name),30,30));const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside)row.append(control('购买','buy',{item:item.id}));d.append(row)}}
+ if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='goods-row';row.append(spriteEl(item.sprite||spriteGuess(item.name),30,30));const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside){const bb=control('购买','buy',{item:item.id});if(state.openHours&&state.openHours[place.id]===false){bb.disabled=true;bb.textContent='打烊';bb.title='这家店已经打烊了，明天再来'}row.append(bb)}d.append(row)}}
   if(inside&&!state.travel?.inProgress)jobsBox(d,place,control)
   if(!state.travel?.inProgress)dailyBox(d,place)
   if(inside){

@@ -98,6 +98,10 @@ function townPromptLine() {
   const tone = s.tone || {}
   const parts = []
   parts.push('【橡溪镇】' + (s.clock?.label || '') + ' ' + (s.clock?.local || '') + '，她在' + (s.location?.name || '镇上') + '。')
+  const hereId = s.location?.id
+  const hv = hereId && s.hours ? s.hours[hereId] : null
+  if (hv && hv.isOpen === false) parts.push('这里已经打烊了（营业 ' + hv.openText + '–' + hv.closeText + '）。')
+  if (s.night) parts.push('夜深了，街上没什么人，她应该回家睡觉。')
   parts.push('精力 ' + Math.round(Number(s.energy ?? 0)) + '/100（' + (tone.energyLabel || '正常') + '），心情 ' + Math.round(Number(s.mood ?? 0)) + '，' + (s.fullness?.label ? '饱食感：' + s.fullness.label + '。' : ''))
   if (s.travel && s.travel.inProgress) {
     const from = (s.locations || []).find(x => x.id === s.travel.inProgress.from)

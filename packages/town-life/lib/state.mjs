@@ -224,7 +224,7 @@ function status(config) { const state = tickWorld(fileOf(config), withInterior(r
  const shownNpcs = state.homeVisitor && state.homeVisitor.npcId
    ? movingNpcs.map(n => n.id === state.homeVisitor.npcId ? { ...n, locationId: homeId, activity: '来小屋串门' } : n)
    : movingNpcs
- const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), daily: dailyView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), plan: planView(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
+ const hours = hoursView(state, now); const openHours = Object.fromEntries(Object.entries(hours).map(([id, v]) => [id, v.isOpen])); return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), daily: dailyView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), plan: planView(state), hours, openHours, night: isNight(minuteOfDay(now, state)), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
         home: { rooms: HOME_ROOMS, items: homeDecor, comfort, visitor: state.homeVisitor || null, lastVisit: state.lastVisit || null, visitCeiling: Math.min(55, Math.round((0.1 + comfort.score / 260) * 100)) },
         homeComfortLevels: COMFORT_LEVELS, relationships: Object.fromEntries(Object.entries(state.relationships || {}).map(([id, rel]) => [id, { ...rel, affinity: affectionOf(rel.score) }])), affectionLevels: AFFECTION_LEVELS, itemCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).length, 0), furnitureCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).filter(item => item.decor).length, 0), openHours, weatherEffect: rain ? '雨天：户外活动减少，NPC更常待在室内。' : '适合户外活动。', currentPhase: phase(state) } } }
 function event(config, mode) { const file = fileOf(config); const state = readTown(file); const today = new Date().toISOString().slice(0, 10); const prior = state.lastEvent && String(state.lastEvent.at || '').slice(0, 10); const key = mode === 'surprise' ? '突发' : prior === today ? '偶然' : 'daily'; const picked = choose(state.events?.[key]?.length ? state.events[key] : DEFAULT_EVENTS[key]); state.lastEvent = { ...picked, mode: key, at: new Date().toISOString() }; state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok: true, mode, event: state.lastEvent, state: withInterior(state) } }
@@ -234,8 +234,8 @@ function npcGift(config, npcId, itemId) { const file = fileOf(config); const sta
 function recallGiftReaction(npc, gift) { const interest = (npc.likes || [])[0] || '小东西'; return `${npc.name}收下了${gift.name}，说会好好收着${npc.why ? '——' + npc.why : ''}，还提到自己最近常在意的${interest}。` }
 function eventSuggestion(config) { const file = fileOf(config); const state = status(config).state; const hour = new Date().getHours(); const rain = /雨|雷/.test(String(state.weather?.condition || '')); const candidates = []; if (rain) candidates.push({ id: 'rainy-tea', title: '雨天室内茶会', locationId: 'oakbrook-restaurant', text: '雨声把大家留在餐厅，玛尔塔提议煮一壶红茶。' }); else if (hour >= 17) candidates.push({ id: 'lake-sunset', title: '湖边晚霞', locationId: 'moonlake-park', text: '傍晚的湖面亮起来，芬恩在木栈道边收渔具。' }); else candidates.push({ id: 'market-basket', title: '杂货店新货', locationId: 'oakbrook-market', text: '杂货店刚到了一批灯芯和手账纸，玛尔塔在门口整理。' }); return { ok: true, mode: 'suggestion', event: candidates[0], state } }
 function enter(config, locationId) { return travel(config, locationId, 'walk') }
-function travel(config, locationId, mode = 'walk') { const file = fileOf(config); const state = readTown(file); const destination = (state.locations || []).find(x => x.id === locationId); if (!destination) throw new Error('unknown location'); const from = state.location?.id || 'fish-home'; if (from === locationId) return { ok: true, mode: 'travel', location: state.location, elapsedMinutes: 0, state: withInterior(state) }; const minutes = mode === 'transit' ? Number(destination.transitMinutes ?? destination.walkMinutes ?? 0) : Number(destination.walkMinutes ?? 0); const now = new Date(); const scale = 60000; state.travel = { ...(state.travel || {}), mode, inProgress: { from, to: locationId, minutes, mode, startedAt: now.toISOString(), eta: new Date(now.getTime() + minutes * scale).toISOString(), progress: 0 }, lastTrip: { from, to: locationId, minutes, at: now.toISOString() }, minutesToday: Number(state.travel?.minutesToday || 0) + minutes, date: now.toISOString().slice(0, 10) }; state.updatedAt = now.toISOString(); writeState(file, state); return { ok: true, mode: 'travel', location: state.location, elapsedMinutes: minutes, state: withInterior(state) } }
-function buy(config, shopId, itemId, quantity = 1) { const file = fileOf(config); const state = readTown(file); const shop = (state.shops || []).find(x => x.id === shopId); const item = shop?.items?.find(x => x.id === itemId); const count = Math.max(1, Math.min(10, Number(quantity) || 1)); if (!item) throw new Error('unknown item'); const total = Number(item.price) * count; const balance = Number(state.wallet?.balance ?? state.coins ?? 0); if (balance < total) throw new Error(`not enough coins: need ${total}, have ${balance}`); state.wallet = { ...(state.wallet || {}), balance: balance - total }; state.coins = state.wallet.balance; state.energy = Math.min(100, Number(state.energy || 0) + Number(item.energy || 0)); state.mood = Math.min(100, Number(state.mood || 50) + Number(item.mood || 0)); state.inventory = Array.isArray(state.inventory) ? state.inventory : []; for (let i=0;i<count;i++) state.inventory.push({ id:item.id, name:item.name, sprite:item.sprite || spriteOf(item), decor:item.decor === true, price:item.price, boughtAt:new Date().toISOString() }); state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok:true, mode:'buy', shop:shop.name, item:item.name, quantity:count, total, balance:state.wallet.balance, state:withInterior(state) } }
+function travel(config, locationId, mode = 'walk') { const file = fileOf(config); const state = readTown(file); const destination = (state.locations || []).find(x => x.id === locationId); if (!destination) throw new Error('unknown location'); const from = state.location?.id || 'fish-home'; if (from === locationId) return { ok: true, mode: 'travel', location: state.location, elapsedMinutes: 0, state: withInterior(state) }; const minutes = mode === 'transit' ? Number(destination.transitMinutes ?? destination.walkMinutes ?? 0) : Number(destination.walkMinutes ?? 0); const now = new Date(); if (mode === 'transit' && !isOpenAt('oakbrook-station', minuteOfDay(now, state))) throw new Error('车站已经收班了（首班 05:30、末班 23:00），今晚只能走回去。'); const scale = 60000; state.travel = { ...(state.travel || {}), mode, inProgress: { from, to: locationId, minutes, mode, startedAt: now.toISOString(), eta: new Date(now.getTime() + minutes * scale).toISOString(), progress: 0 }, lastTrip: { from, to: locationId, minutes, at: now.toISOString() }, minutesToday: Number(state.travel?.minutesToday || 0) + minutes, date: now.toISOString().slice(0, 10) }; state.updatedAt = now.toISOString(); writeState(file, state); return { ok: true, mode: 'travel', location: state.location, elapsedMinutes: minutes, state: withInterior(state) } }
+function buy(config, shopId, itemId, quantity = 1) { const file = fileOf(config); const state = readTown(file); const shop = (state.shops || []).find(x => x.id === shopId); const item = shop?.items?.find(x => x.id === itemId); const count = Math.max(1, Math.min(10, Number(quantity) || 1)); if (!item) throw new Error('unknown item'); const shopMinute = minuteOfDay(new Date(), state); if (!isOpenAt(shopId, shopMinute)) { const hh = hoursOf(shopId); throw new Error('「' + (shop?.name || '这家店') + '」已经打烊了（营业 ' + hh.openText + '–' + hh.closeText + '），明天再来。') } const total = Number(item.price) * count; const balance = Number(state.wallet?.balance ?? state.coins ?? 0); if (balance < total) throw new Error(`not enough coins: need ${total}, have ${balance}`); state.wallet = { ...(state.wallet || {}), balance: balance - total }; state.coins = state.wallet.balance; state.energy = Math.min(100, Number(state.energy || 0) + Number(item.energy || 0)); state.mood = Math.min(100, Number(state.mood || 50) + Number(item.mood || 0)); state.inventory = Array.isArray(state.inventory) ? state.inventory : []; for (let i=0;i<count;i++) state.inventory.push({ id:item.id, name:item.name, sprite:item.sprite || spriteOf(item), decor:item.decor === true, price:item.price, boughtAt:new Date().toISOString() }); state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok:true, mode:'buy', shop:shop.name, item:item.name, quantity:count, total, balance:state.wallet.balance, state:withInterior(state) } }
 function clampToRoom(roomName, x, y) {
   const room = HOME_ROOMS.find(r => r.name === roomName || r.id === roomName)
   const nx = Math.round(Number(x))
@@ -250,6 +250,58 @@ function decorate(config, itemId, placement = {}) { const file = fileOf(config);
   } if (action === 'rotate' || Number.isFinite(Number(placement.rotation))) decor.rotation = ((Number(placement.rotation ?? decor.rotation ?? 0) % 360) + 360) % 360 } state.lastAction = { text: action === 'remove' ? `把${decor.name}收回库存` : `调整了${decor.name}的位置`, at: new Date().toISOString() } } else { const item = (state.inventory || []).find(x => x.id === itemId || x.name === itemId); if (!item) throw new Error('item not in inventory'); state.inventory.splice(state.inventory.indexOf(item), 1); const placeRoom = placement.room || '客厅'; const placeSpot = clampToRoom(placeRoom, Number.isFinite(Number(placement.x)) ? Number(placement.x) : 50, Number.isFinite(Number(placement.y)) ? Number(placement.y) : 50); state.homeDecor.push({ id: item.id, instanceId: `${item.id}-${Date.now()}`, name: item.name, sprite: item.sprite || spriteOf(item), price: item.price, room: placeRoom, x: placeSpot.x, y: placeSpot.y, rotation: Number(placement.rotation) || 0, comfort: comfortOf(item), placedAt: new Date().toISOString() }); state.lastAction = { text: `把${item.name}布置进水边小屋`, at: new Date().toISOString() } } state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok:true, mode:'decorate', action, state:withInterior(state) } }
 // ---------- 时间 · 精力 · 干活 · 田地 ----------
 const MINUTE_MS = 6000
+/* ===== 营业时间与作息 ===== */
+const SHOP_HOURS = {
+  'oakbrook-market': [7 * 60, 21 * 60],
+  'oakbrook-restaurant': [10 * 60, 21 * 60 + 30],
+  'oakbrook-bakery': [6 * 60 + 30, 15 * 60],
+  'oakbrook-pharmacy': [9 * 60, 20 * 60],
+  'oakbrook-hardware': [8 * 60, 18 * 60],
+  'oakbrook-clothing': [10 * 60, 19 * 60],
+  'oakbrook-flower': [8 * 60, 19 * 60],
+  'oakbrook-library': [9 * 60, 18 * 60],
+  'oakbrook-workshop': [8 * 60, 18 * 60],
+  'oakbrook-post': [8 * 60 + 30, 17 * 60 + 30],
+  'oakbrook-furniture': [10 * 60, 19 * 60],
+  'lucky-star': [9 * 60, 20 * 60],
+  'oakbrook-station': [5 * 60 + 30, 23 * 60],
+  'moonlake-park': [5 * 60, 23 * 60],
+  'fish-home': [0, 24 * 60]
+}
+const SLEEP_FROM = 23 * 60 + 30
+const SLEEP_TO = 7 * 60
+function minuteOfDay(now, state) {
+  const at = new Date(now.getTime() + Number(state?.clockOffset || 0) * 60000)
+  return at.getHours() * 60 + at.getMinutes()
+}
+function hoursOf(locationId) {
+  const span = SHOP_HOURS[locationId] || [9 * 60, 21 * 60]
+  const fmt = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0')
+  return { from: span[0], to: span[1], openText: fmt(span[0]), closeText: fmt(span[1] % (24 * 60)), always: span[0] === 0 && span[1] >= 24 * 60 }
+}
+function isOpenAt(locationId, minute) {
+  const span = SHOP_HOURS[locationId] || [9 * 60, 21 * 60]
+  if (span[0] === 0 && span[1] >= 24 * 60) return true
+  if (span[1] > span[0]) return minute >= span[0] && minute < span[1]
+  return minute >= span[0] || minute < span[1]
+}
+function isNight(minute) { return minute >= SLEEP_FROM || minute < SLEEP_TO }
+function hoursView(state, now = new Date()) {
+  const minute = minuteOfDay(now, state)
+  const out = {}
+  for (const place of state.locations || []) {
+    const span = hoursOf(place.id)
+    const open = isOpenAt(place.id, minute)
+    out[place.id] = {
+      isOpen: open,
+      always: span.always,
+      openText: span.openText,
+      closeText: span.closeText,
+      label: span.always ? '全天开着' : open ? '营业中 ' + span.openText + '–' + span.closeText : '已打烊 · ' + span.openText + ' 开门'
+    }
+  }
+  return out
+}
 const JOBS = [
   { id: 'restaurant-hand', locationId: 'oakbrook-restaurant', name: '餐厅帮厨', minutes: 20, energy: 12, mood: 2, pay: 55, desc: '切菜、看火、洗盘子。' },
   { id: 'market-clerk', locationId: 'oakbrook-market', name: '杂货店理货', minutes: 15, energy: 8, mood: 2, pay: 40, desc: '拆箱子、把货摆上架。' },
@@ -331,7 +383,8 @@ function dailyView(state) {
     rerollsLeft: Math.max(0, DAILY_REROLLS - Number(state.daily.rerolls || 0)),
     tasks: state.daily.tasks.map(task => {
       const here = task.locationId === placeId
-      const reason = task.done ? '已经做完了' : busy ? '手上还有活没干完' : !here ? '要去' + (state.locations?.find(x => x.id === task.locationId)?.name || '那个地点') + '才能接' : energy < task.energy ? '精力不够，先吃点东西' : ''
+      const closed = task.locationId && !isOpenAt(task.locationId, minuteOfDay(new Date(), state))
+      const reason = task.done ? '已经做完了' : closed ? '这家店关门了，等它开门再来' : busy ? '手上还有活没干完' : !here ? '要去' + (state.locations?.find(x => x.id === task.locationId)?.name || '那个地点') + '才能接' : energy < task.energy ? '精力不够，先吃点东西' : ''
       return { ...task, here, available: !reason, reason }
     })
   }
@@ -394,12 +447,26 @@ function hashPick(text, list) {
   for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0
   return list[Math.abs(h) % list.length]
 }
+function pickOpen(key, seeds, minute, rain) {
+  const map = { 'oakbrook-park': 'moonlake-park' }
+  const open = seeds.filter(id => {
+    const place = map[id] || id
+    if (!isOpenAt(place, minute)) return false
+    if (rain && place === 'moonlake-park') return false
+    return true
+  })
+  const pool = open.length ? open : seeds.filter(id => isOpenAt(map[id] || id, minute))
+  const list = pool.length ? pool : ['fish-home']
+  return list[Math.abs(hashPick(key, list.map((_, i) => i)) ?? 0) % list.length] === undefined ? list[0] : hashPick(key, list)
+}
 function ensurePlan(state, now = new Date()) {
   const key = dayKeyOf(now)
   if (state.plan && state.plan.day === key && Array.isArray(state.plan.steps) && state.plan.steps.length === ROUTE_SLOTS.length) return false
   const locations = state.locations || []
+  const rain = /雨|雷/.test(String(state.weather?.condition || ''))
   const steps = ROUTE_SLOTS.map((slot, i) => {
-    const locationId = slot.fixed || hashPick(key + '|' + i + '|' + slot.label, slot.pick)
+    const seed = key + '|' + i + '|' + slot.label
+    const locationId = slot.fixed || pickOpen(seed, slot.pick, slot.at, rain)
     const place = locations.find(x => x.id === locationId)
     return {
       id: 'r' + i,
@@ -443,12 +510,47 @@ function setAutoPilot(config, on) {
   writeState(file, state)
   return { ok: true, mode: 'autopilot', autoPilot: state.autoPilot, plan: planView(state), state: withInterior(state) }
 }
+function tripMinutes(state, fromId, toId) {
+  if (!fromId || fromId === toId) return 0
+  const list = state.locations || []
+  const a = list.find(x => x.id === fromId)
+  const b = list.find(x => x.id === toId)
+  const da = Number(a?.walkMinutes ?? 8)
+  const db = Number(b?.walkMinutes ?? 8)
+  return Math.max(3, Math.round((da + db) / 2))
+}
 function pilotTick(state, now = new Date()) {
   if (state.autoPilot === false) return false
   const steps = state.plan?.steps || []
   if (!steps.length) return false
   const clock = gameClock(state)
   const minute = clock.hour * 60 + new Date(Date.now() + Number(state.clockOffset || 0) * 60000).getMinutes()
+  if (isNight(minute) && (state.location?.id || 'fish-home') !== 'fish-home') {
+    if (state.activity && state.activity.endsAt && Date.parse(state.activity.endsAt) > now.getTime()) return false
+    if (state.travel?.inProgress) return false
+    const home = { id: 'fish-home' }
+    if (home) {
+      const walk = tripMinutes(state, state.location?.id || 'fish-home', 'fish-home')
+      const startedAt = now.toISOString()
+      state.travel = {
+        ...(state.travel || {}),
+        mode: 'walk',
+        auto: true,
+        inProgress: {
+          from: state.location?.id || 'fish-home', to: 'fish-home', minutes: walk, mode: 'walk', auto: true,
+          reason: '夜深了，该回家睡觉了', startedAt,
+          eta: new Date(now.getTime() + walk * 60000).toISOString(), progress: 0
+        },
+        lastTrip: { from: state.location?.id || 'fish-home', to: 'fish-home', minutes: walk, at: startedAt, auto: true },
+        minutesToday: Number(state.travel?.minutesToday || 0) + walk,
+        date: now.toISOString().slice(0, 10)
+      }
+      state.planStep = 'r-night'
+      state.planLabel = '回家睡觉'
+      state.lastAction = { text: '夜深了，她往家走。', at: startedAt }
+      return true
+    }
+  }
   let currentIndex = -1
   steps.forEach((step, i) => { if (step.startMin <= minute) currentIndex = i })
   if (currentIndex < 0) return false
@@ -465,8 +567,8 @@ function pilotTick(state, now = new Date()) {
   }
   const destination = (state.locations || []).find(x => x.id === step.locationId)
   if (!destination) return false
-  const walk = Number(destination.walkMinutes ?? 6)
-  const transit = Number(destination.transitMinutes ?? Math.max(2, Math.round(walk / 3)))
+  const walk = Math.max(2, tripMinutes(state, here, step.locationId))
+  const transit = Math.max(2, Math.round(walk / 3))
   const mode = walk > 14 ? 'transit' : 'walk'
   const minutes = mode === 'transit' ? transit : walk
   const startedAt = now.toISOString()
@@ -525,7 +627,7 @@ function cropStage(plot) {
   return { key, label, progress: Math.round(ratio * 100), crop, ratio }
 }
 function fieldView(state) {
-  const field = ensureField(state)
+    const field = ensureField(state)
   const plots = field.plots.map((plot, index) => {
     const stage = cropStage(plot)
     return { index, x: PLOT_SPOTS[index].x, y: PLOT_SPOTS[index].y, cropId: plot.cropId, cropName: stage.crop ? stage.crop.name : null, stage: stage.key, stageLabel: stage.label, progress: stage.progress, water: Math.round(Number(plot.water || 0)), thirsty: Number(plot.water || 0) < 20, ready: stage.progress >= 100, sell: stage.crop ? stage.crop.sell : 0 }
@@ -584,8 +686,36 @@ function tickWorld(file, state, now = new Date()) {
     state.activity = null
     dirty = true
   }
+  const nowMinute = minuteOfDay(now, state)
+  const atHome = state.location?.id === 'fish-home'
+  if (isNight(nowMinute) && atHome && !state.activity) {
+    const lastSleep = Date.parse(state.lastSleepTick || 0)
+    const slept = Number.isFinite(lastSleep) ? Math.min(120, (now.getTime() - lastSleep) / 60000) : 0
+    if (slept >= 5) {
+      state.energy = Math.min(100, Number(state.energy || 0) + slept * 0.8)
+      state.mood = Math.min(100, Number(state.mood || 0) + slept * 0.06)
+      state.lastSleepTick = now.toISOString()
+      state.sleeping = true
+      dirty = true
+    }
+  } else {
+    if (state.sleeping) { state.sleeping = false; dirty = true }
+    state.lastSleepTick = now.toISOString()
+    if (isNight(nowMinute) && !atHome) {
+      const lastPenalty = Date.parse(state.lastNightPenaltyAt || 0)
+      if (!Number.isFinite(lastPenalty) || now.getTime() - lastPenalty > 20 * 60000) {
+        state.mood = Math.max(0, Number(state.mood || 0) - 1)
+        state.lastNightPenaltyAt = now.toISOString()
+        state.nightWarning = '夜深了，她还在外面，应该回家了。'
+        dirty = true
+      }
+    }
+  }
+  const rainNow = /雨|雷/.test(String(state.weather?.condition || ''))
   const field = ensureField(state)
   for (const plot of field.plots) {
+    if (rainNow && plot.cropId && Number(plot.water || 0) < 100) { plot.water = 100; dirty = true }
+
     if (!plot.cropId) continue
     const tickAt = Date.parse(plot.lastTickAt || now.toISOString())
     const dt = Math.max(0, (now.getTime() - tickAt) / 60000)
@@ -619,8 +749,9 @@ function jobsAt(state) {
     const bonus = Math.min(0.5, Number(stat.times || 0) * 0.05)
     const pay = Math.round(job.pay * (1 + bonus))
     const energy = Number(state.energy ?? 100)
+    const closedNow = !isOpenAt(job.locationId, minuteOfDay(new Date(), state))
     const busy = activeActivity(state)
-    const reason = busy ? '手上还有活没干完' : energy < job.energy ? '精力不够，先吃点东西' : ''
+    const reason = closedNow ? '这家店已经打烊了' : busy ? '手上还有活没干完' : energy < job.energy ? '精力不够，先吃点东西' : ''
     return { ...job, pay, bonus: Math.round(bonus * 100), times: Number(stat.times || 0), available: !reason, reason }
   })
 }
@@ -637,6 +768,7 @@ function work(config, jobId) {
   if (busy) throw new Error('正在' + busy.label + '，等这' + busy.remainMinutes + '分钟做完再说。')
   const job = JOBS.find(j => j.id === jobId) || jobsAt(state)[0]
   if (!job) throw new Error('这里没有可以干的活：' + (state.location?.name || '当前地点'))
+  if (job.locationId !== 'fish-home' && !isOpenAt(job.locationId, minuteOfDay(new Date(), state))) { const hh = hoursOf(job.locationId); throw new Error('「' + (state.location?.name || '这里') + '」这家店已经打烊了（营业 ' + hh.openText + '–' + hh.closeText + '），明早再来。') }
   const stat = state.jobStats?.[job.id] || { times: 0 }
   const bonus = Math.min(0.5, Number(stat.times || 0) * 0.05)
   const pay = Math.round(job.pay * (1 + bonus))
@@ -793,4 +925,4 @@ function harvest(config, plotIndex) {
 
 async function weather(config) { const file = fileOf(config); const state = readTown(file); const w = { ...(state.weather || {}) }; if (w.provider === 'city' && Number.isFinite(Number(w.latitude)) && Number.isFinite(Number(w.longitude))) { try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.latitude}&longitude=${w.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=${encodeURIComponent(w.timezone || 'Asia/Shanghai')}`; const res = await fetch(url, { signal: AbortSignal.timeout(8000) }); if (!res.ok) throw new Error(`weather http ${res.status}`); const data = await res.json(); const c = data.current || {}; w.temperatureC = c.temperature_2m ?? w.temperatureC; w.feelsLikeC = c.apparent_temperature ?? w.feelsLikeC; w.humidity = c.relative_humidity_2m ?? w.humidity; w.windKph = c.wind_speed_10m ?? w.windKph; w.condition = String(c.weather_code ?? w.condition); w.updatedAt = new Date().toISOString(); w.source = 'open-meteo city forecast'; const latest = readState(file); latest.weather = w; latest.updatedAt = new Date().toISOString(); writeState(file, latest); return { ok:true, mode:'weather', weather:w, live:true } } catch (error) { return { ok:true, mode:'weather', weather:w, live:false, error:String(error.message || error), note:'实时天气暂时不可用，返回上次城市级缓存。' } } } return { ok:true, mode:'weather', weather:w, live:false, note:'未配置城市坐标。' } }
 
-export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock, DAILY_TASK_POOL, DAILY_REROLLS, dailyView, rerollTasks, acceptTask, planView, pilotTick, setAutoPilot, ROUTE_SLOTS }
+export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock, DAILY_TASK_POOL, DAILY_REROLLS, dailyView, rerollTasks, acceptTask, planView, pilotTick, setAutoPilot, SHOP_HOURS, hoursOf, hoursView, isOpenAt, isNight, minuteOfDay, ROUTE_SLOTS }
