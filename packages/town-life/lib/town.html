@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>橡溪镇 · 生活地图</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#293d34;background:#f3efe5;font:15px/1.6 "Microsoft YaHei",sans-serif}main{max-width:1640px;margin:auto;padding:20px clamp(14px,3vw,52px)}header,footer,.row,.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px}header{border-bottom:1px solid #c9c7b7;padding-bottom:12px}small{color:#5c6d60}h1,h2,h3{font-family:Georgia,"SimSun",serif;margin:.18em 0}h1{font-size:clamp(32px,4vw,52px);letter-spacing:.09em}h3{font-size:16px;margin-top:14px}article{display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,23vw,355px);gap:16px;margin:18px 0;align-items:start}button{font:inherit;color:inherit;cursor:pointer;background:#fcf9ee;border:1px solid #c3c4b0;padding:6px 10px;border-radius:9px}button:hover,button:focus-visible{outline:2px solid #9d7850;outline-offset:1px}button:disabled{opacity:.6}.primary{background:#36594c;color:white}.map,aside{border:1px solid #c6c4af;border-radius:16px;overflow:hidden;background:#fffaf0}.viewport{overflow:auto;max-height:73vh;background:#ddceb3;cursor:grab}.land{position:relative;min-width:770px}.land>img{width:100%;height:auto;display:block;pointer-events:none}.hit{position:absolute;transform:translate(-50%,-100%);width:13%;height:22%;border:0;background:transparent;border-radius:25%}.hit span{position:absolute;left:50%;bottom:0;transform:translateX(-50%);background:#fff7e4ed;color:#403e30;padding:2px 8px;border:1px solid #aa9772;border-radius:16px;white-space:nowrap;font-size:12px}.hit[aria-pressed=true] span{background:#305648;color:white}.traveler{position:absolute;transform:translate(-50%,-100%);pointer-events:none;z-index:3}.traveler img,.fish-avatar img{display:block;width:40px;height:40px;object-fit:cover;border-radius:50%;border:3px solid #fff6d8;box-shadow:0 2px 8px #3d403475}.traveler:after{content:"";position:absolute;left:16px;border:5px solid transparent;border-top-color:#fff6d8}.toolbar{padding:9px 14px;flex-wrap:wrap}.toolbar input{width:86px;vertical-align:middle;accent-color:#44674f}aside{padding:18px;max-height:81vh;overflow:auto}aside p{margin:5px 0 12px}.choices,.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.row{padding:5px 0;border-bottom:1px solid #e4dfd1}.choices button,.row button{font-size:13px}footer{flex-wrap:wrap;border-top:1px solid #c9c7b7;padding-top:12px}footer>div:first-child{display:grid;grid-template-columns:auto 1fr;column-gap:8px}.fish-avatar{grid-row:1/3}#notice{position:sticky;bottom:0;background:#fff5d9;color:#764c2f;border-radius:8px;padding:6px}#notice:empty{display:none}#room{background:radial-gradient(ellipse at center,#fdf6e7,#dbccae);text-align:center;padding:8px}#room[hidden],.viewport[hidden],label[hidden]{display:none}#stage{position:relative;margin:auto;width:min(100%,65vh);aspect-ratio:1;background-size:cover;border-radius:8px;overflow:hidden}.prop,.furniture,.person{position:absolute;transform:translate(-50%,-50%);background:#fff9ebeb;font-size:12px;box-shadow:0 2px 5px #30291942}.prop{border-radius:20px;padding:3px 7px}.furniture{touch-action:none;cursor:move;font-size:22px}.person{border-radius:50%;padding:1px}.person img{width:32px;height:32px;border-radius:50%;display:block}#object-panel{min-height:2.4em;padding:5px}#object-panel button{margin-left:6px}#stats,#activity{color:#536659}#sync{display:block} @media(max-width:850px){article{grid-template-columns:1fr}aside{max-height:none}.viewport{max-height:62vh}.toolbar{padding:7px}.hit span{font-size:11px}main{padding:12px}h1{font-size:34px}}
+.route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.route polyline{fill:none;stroke:#265f55;stroke-width:.65;stroke-dasharray:1.15 .85;stroke-linecap:round;filter:drop-shadow(0 0 .3px white)} #back[hidden]{display:none}</style><main><header><div><small>月镜湖畔 ／ 生活地图</small><h1>橡溪镇</h1></div><div><small id="sync" role="status">连接中</small></div></header>
+<article><section class="map" aria-label="小镇地图"><div class="viewport" id="viewport"><div class="land" id="land"><img width="1536" height="1024" alt="沿月镜湖展开的立体小镇，湖边木屋、商业街与南侧铁路相连"><div id="pins" aria-label="小镇与小渊位置"></div></div></div><section id="room" hidden><div id="stage"></div><div id="object-panel" aria-live="polite"></div></section><div class="toolbar"><button id="back" hidden>返回街区</button><label id="zoom-label">地图缩放 <input id="zoom" type="range" min="100" max="200" step="25" value="100"></label><button id="locate">定位小渊</button></div></section>
+<aside><small>地点手册</small><div id="details"></div><p id="notice" role="status"></p></aside></article><footer><div><small>居民动态</small><h2 id="resident">小渊</h2><small id="map-help"></small></div><div id="stats"></div></footer><p id="activity"></p></main>
+<script>
+const $=id=>document.getElementById(id)
+// Entries follow the physical doors, listed by street and interior atlas cell.
+const streets=[
+ ['fish-home','moonlake-park','oakbrook-flower','oakbrook-bakery'],
+ ['oakbrook-post','oakbrook-library','oakbrook-restaurant','oakbrook-market','oakbrook-pharmacy'],
+ ['oakbrook-workshop','oakbrook-hardware','oakbrook-clothing','lucky-star','oakbrook-station']
+]
+const doorX=[[19,42,64,86],[12,30,49,67,84],[10,28,47,62,80]]
+const coords={},cells={},blocks={}
+streets.forEach((street,r)=>street.forEach((id,c)=>{coords[id]=[doorX[r][c],[28,59,90][r]];cells[id]=streets.flat().indexOf(id);blocks[id]=r}))
+const avatarFallback='data:image/webp;base64,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'
+const places=['湖岸街','中央商街','工坊与站前街']
+function route(from,to){
+ const a=coords[from],b=coords[to];if(!a||!b)return []
+ const r=blocks[from],s=blocks[to];if(r===s)return [a,b]
+ const lanes=[[[95,28],[97,44],[95,59]],[[37,59],[37,74],[37,90]]]
+ const path=[a]
+ if(r<s){for(let k=r;k<s;k++)path.push(...lanes[k])}
+ else {for(let k=r-1;k>=s;k--)path.push(...lanes[k].slice().reverse())}
+ return [...path,b]
+}
+function along(path,t){
+ if(!path.length)return null
+ const lengths=path.slice(1).map((b,i)=>Math.hypot((b[0]-path[i][0])*1.5,b[1]-path[i][1]))
+ let remaining=Math.min(1,Math.max(0,t))*lengths.reduce((a,b)=>a+b,0)
+ for(let i=0;i<lengths.length;i++){if(remaining<=lengths[i]&&lengths[i]){let f=remaining/lengths[i];return path[i].map((a,k)=>a+f*(path[i+1][k]-a))}remaining-=lengths[i]}
+ return path.at(-1)
+}
+const activities={
+ 'oakbrook-pharmacy':['查看健康提醒','询问常用护理用品','整理急救包'],
+ 'oakbrook-bakery':['看看今日出炉面包','坐下来喝咖啡','帮忙装一袋点心'],
+ 'oakbrook-hardware':['查看工具墙','挑选木屋材料','询问修缮建议'],
+ 'oakbrook-clothing':['看看换季衣物','试戴湖蓝围巾','挑选布艺小物'],
+ 'oakbrook-flower':['闻闻今日鲜花','挑选盆栽','看看花种子'],
+ 'oakbrook-library':['查看小镇档案','在窗边阅读','寻找湖区旅行书'],
+ 'oakbrook-workshop':['看看家具样品','询问房屋升级','在修理角帮忙'],
+ 'oakbrook-post':['查看公告栏','取一个包裹','挑选湖景明信片'],
+ 'fish-home':['在小屋写日记','去码头整理渔具','给窗边的花浇水'],
+ 'moonlake-park':['沿湖岸散步','在长椅上听鸟鸣','画一张湖畔速写'],
+ 'oakbrook-station':['查看站台时刻表','在月台看列车进站','在候车亭读书'],
+ 'oakbrook-restaurant':['坐下看今日菜单','在靠窗的桌边喝茶','向厨师请教热汤做法'],
+ 'oakbrook-market':['逛货架','挑选手账纸样','看看花箱里的新苗'],
+ 'lucky-star':['查看店内公告','翻看往期纪念票','欣赏橱窗里的手绘海报']
+}
+let state,selected,busy=false,revision=0,roomOpen=false,dragging=false,inspected=null
+function el(tag,text=''){const n=document.createElement(tag);n.textContent=text;return n}
+function button(text,fn){const b=el('button',text);b.onclick=fn;return b}
+function avatar(){const img=document.createElement('img');img.src=state.avatar?.imageUrl||avatarFallback;img.alt='小渊';img.onerror=()=>{img.onerror=null;img.src=avatarFallback};return img}
+function select(id,open=false){selected=id;roomOpen=open;inspected=null;$('notice').textContent='';draw()}
+function position(n,x,y){n.style.left=x+'%';n.style.top=y+'%'}
+function zoom(value){$('zoom').value=value;$('land').style.width=$('zoom').value+'%';$('land').style.minWidth=(770*Number($('zoom').value)/100)+'px'}
+$('zoom').oninput=e=>zoom(e.target.value)
+$('back').onclick=()=>select(selected)
+$('locate').onclick=()=>{if(state){select(state.travel?.inProgress?.to||state.location?.id);$('pins').querySelector('.traveler')?.scrollIntoView({block:'nearest',inline:'center'})}}
+const sceneRoot='http://127.0.0.1:18764/scenes/'
+let mapUrl, mapRequest
+function showMapImage(image){
+ if(mapUrl){if(!image.hasAttribute('src'))image.src=mapUrl;return}
+ if(!mapRequest)mapRequest=fetch('/oakbrook.webp').then(r=>{
+   if(!r.ok)throw Error('地图加载失败')
+   return r.blob()
+ }).then(blob=>{
+   mapUrl=URL.createObjectURL(blob)
+   if(!roomOpen)image.src=mapUrl
+ }).catch(()=>{$('notice').textContent='地图加载失败，正在重试'}).finally(()=>{mapRequest=null})
+}
+const view=$('viewport')
+view.onwheel=e=>{if(!e.ctrlKey&&!e.shiftKey)return;e.preventDefault();zoom(Number($('zoom').value)+(e.deltaY<0?25:-25))}
+let pan
+view.onpointerdown=e=>{if(e.pointerType==='mouse'&&e.button===0)pan=[e.clientX,e.clientY,view.scrollLeft,view.scrollTop]}
+view.onpointermove=e=>{if(!pan||!e.buttons)return;const dx=e.clientX-pan[0],dy=e.clientY-pan[1];if(Math.abs(dx)+Math.abs(dy)>5){view.setPointerCapture(e.pointerId);view.scrollLeft=pan[2]-dx;view.scrollTop=pan[3]-dy}}
+window.addEventListener('pointerup',()=>pan=null)
+function draw(){
+ const locs=state.locations||[],here=state.location?.id
+ const place=locs.find(x=>x.id===selected)||locs.find(x=>x.id===here)||locs[0]
+ $('pins').replaceChildren()
+ const trip=state.travel?.inProgress
+ if(!roomOpen){
+ locs.forEach((p,i)=>{const pt=coords[p.id]||[8+i*4,96];const b=button('',()=>select(p.id));b.append(el('span',p.name));b.className='hit';b.setAttribute('aria-pressed',p.id===place?.id);position(b,...pt);$('pins').append(b)})
+ const path=trip?route(trip.from,trip.to):selected&&selected!==here?route(here,selected):[]
+ if(path.length){
+   const ns='http://www.w3.org/2000/svg',overlay=document.createElementNS(ns,'svg'),line=document.createElementNS(ns,'polyline')
+   overlay.setAttribute('viewBox','0 0 150 100');overlay.setAttribute('preserveAspectRatio','none');overlay.setAttribute('aria-hidden','true');overlay.classList.add('route')
+   line.setAttribute('points',path.map(([x,y])=>(x*1.5)+','+y).join(' '));overlay.append(line);$('pins').prepend(overlay)
+ }
+ const pos=trip?along(path,Number(trip.progress)||0):coords[here]
+ if(pos){const traveler=el('div');traveler.className='traveler';traveler.append(avatar());position(traveler,...pos);$('pins').append(traveler)}
+ }
+ $('resident').textContent=trip?'前往'+(locs.find(p=>p.id===trip.to)?.name||'目的地')+' · '+Math.round(trip.progress*100)+'%':state.location?.name||'小渊'
+ let badge=document.querySelector('.fish-avatar');if(!badge){badge=el('div');badge.className='fish-avatar';$('resident').before(badge)}badge.replaceChildren(avatar())
+ const mapImage=$('land').querySelector('img')
+ if(roomOpen&&mapImage.hasAttribute('src'))mapImage.removeAttribute('src')
+ if(!roomOpen){
+   showMapImage(mapImage)
+   if($('stage').dataset.scene){$('stage').replaceChildren();$('stage').style.backgroundImage='none';delete $('stage').dataset.scene;$('object-panel').replaceChildren()}
+ }
+ view.hidden=roomOpen;$('room').hidden=!roomOpen;$('back').hidden=!roomOpen;$('zoom-label').hidden=roomOpen
+ $('stats').textContent='现实时间 '+(state.realTime?.local||'--:--')+'　·　精力 '+state.energy+'　／　余额 '+(state.wallet?.balance??state.coins)+' 镇币　·　地点 '+(state.locations||[]).length+'　·　商店 '+(state.shops||[]).length
+ $('activity').textContent=[state.realTime?.local,state.weatherEffect,state.currentPhase,state.lastEvent?.text,state.lastAction?.text,(state.npcs||[]).map(n=>n.name+'在'+(state.locations||[]).find(p=>p.id===n.locationId)?.name).join('、')].filter(Boolean).join('　·　')
+ const d=$('details');d.replaceChildren();if(!place)return
+ d.append(el('small',places[blocks[place.id]]||'街区'),el('h2',place.name),el('p',place.description||''))
+ const inside=place.id===here&&!trip
+ if(!roomOpen){d.append(button('查看'+(place.id==='moonlake-park'?'湖岸亭':'室内'),()=>select(place.id,true)))}
+ else {d.append(el('p',place.interior?.detail||''));drawRoom(place,inside)}
+ function control(label,kind,extra={}){const b=button(label,()=>run({id:place.id,kind,...extra}));b.disabled=busy;return b}
+ if(!inside && !state.travel?.inProgress){const travelBox=el('div','');travelBox.className='choices';const walk=control('步行进入 · '+(place.walkMinutes||0)+' 分钟','travel',{mode:'walk'});walk.className='primary';travelBox.append(walk);if(place.transitMinutes){travelBox.append(control('交通到达 · '+place.transitMinutes+' 分钟','travel',{mode:'transit'}))}d.append(travelBox)} else if(state.travel?.inProgress){d.append(el('p',`正在前往${locs.find(p=>p.id===state.travel.inProgress.to)?.name||'目的地'}，请等待行程完成。`))}
+ else {const group=el('div','');group.className='choices';for(const action of activities[here]||['在附近走走'])group.append(control(action,'act',{action}));d.append(group)}
+ if(inside){const home=el('div','');home.className='choices';home.append(control('做湖边工作','work',{jobId:'lake-helper'}));if(place.id==='fish-home'){const decorItems=(state.inventory||[]).filter(x=>x.decor||/灯|架|漆|盆栽|花瓶|长凳|围巾|台灯|邮票/.test(x.name||''));if(decorItems.length){home.append(el('strong','自由布置小屋'));for(const item of decorItems.slice(-6)){const row=el('div','');row.className='row';row.append(el('span',item.name));row.append(control('放到书桌','decorate',{item:item.id,room:'小书桌与日记本',x:35,y:45,rotation:0}));row.append(control('放到窗边','decorate',{item:item.id,room:'收藏瓶与窗边花盆',x:70,y:35,rotation:0}));home.append(row)}}}d.append(home)}
+  const shop=state.shops?.find(s=>(s.locationId||s.id)===place.id)
+ if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='row';const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside)row.append(control('购买','buy',{item:item.id}));d.append(row)}}
+  if(inside){
+   const npcs=(state.npcs||[]).filter(n=>n.locationId===place.id); if(npcs.length){d.append(el('h3','正在这里的居民'));for(const npc of npcs){const row=el('div','');row.className='row';row.append(el('span',npc.name+' · '+npc.activity));row.append(control('聊几句','npc-talk',{npcId:npc.id,text:'在'+place.name+'见面'}));d.append(row)}}
+   const suggest=button('看看此刻发生什么',async()=>{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'event-suggestion'})});const v=await r.json();$('notice').textContent=v.event?.title? v.event.title+'：'+v.event.text : '暂无新的生活建议'});suggest.disabled=busy;d.append(suggest)
+  }
+  if(place.id==='fish-home'&&(state.homeDecor||[]).length){d.append(el('h3','小屋已布置'));for(const item of state.homeDecor.slice(-8)){const label=state.showDecorDetails===false?item.name:`${item.name} · ${item.room||'小屋'} · ${item.x||50},${item.y||50} · ${item.rotation||0}°`;const row=el('div','');row.className='row';row.append(el('span',label));if(inside&&place.id==='fish-home'){row.append(control('左转','decorate',{item:item.instanceId||item.id,decorAction:'rotate',rotation:(Number(item.rotation)||0)-15}));row.append(control('移动到窗边','decorate',{item:item.instanceId||item.id,decorAction:'move',room:item.room,x:72,y:35,rotation:item.rotation||0}));row.append(control('收回','decorate',{item:item.instanceId||item.id,decorAction:'remove'}))}d.append(row)}}
+  if((state.inventory||[]).length){d.append(el('h3','随身物品'));for(const item of state.inventory.slice(-8)){const row=el('div','');row.className='row';row.append(el('span',item.name),inside&&place.id==='fish-home'?control('布置','decorate',{item:item.id}):el('small','已带在身上'));d.append(row)}}
+}
+// Each hotspot is anchored to the furniture illustrated in its own room.
+const objects=[
+ [['日记本',78,61],['渔具架',19,38],['窗台',51,48]],
+ [['木栈道',48,83],['观景长椅',39,68],['鸟食台',79,54]],
+ [['鲜花桶',22,63],['盆栽',73,65],['种子架',78,39]],
+ [['面包柜',46,66],['咖啡台',22,49],['砖烤炉',77,45]],
+ [['公告栏',26,35],['包裹',74,76],['明信片格',75,38]],
+ [['档案架',18,47],['阅览桌',55,76],['旅行书架',74,40]],
+ [['餐桌',30,74],['窗边座位',81,71],['汤锅',46,47]],
+ [['果蔬箱',28,73],['展示台',73,72],['杂货架',76,44]],
+ [['护理柜',26,51],['药瓶架',74,42],['急救台',47,71]],
+ [['样品木架',22,51],['工具墙',70,43],['木工台',48,75]],
+ [['工具墙',30,38],['材料架',74,47],['修理台',61,74]],
+ [['成衣架',74,51],['试衣镜',86,37],['布料台',59,75]],
+ [['公告牌',29,43],['纪念票',51,61],['海报架',75,53]],
+ [['站台钟',66,32],['检票口',81,61],['候车椅',38,75]]
+]
+function drawRoom(place,inside){
+ const stage=$('stage'),panel=$('object-panel'),cell=cells[place.id]
+ stage.replaceChildren();panel.replaceChildren();if(stage.dataset.scene!==place.id){stage.dataset.scene=place.id;stage.style.backgroundImage=Object.hasOwn(cells,place.id)?'url('+sceneRoot+place.id+'.webp)':'none'}
+ const commands=activities[place.id]||['在附近走走']
+ const goods=state.shops?.find(s=>(s.locationId||s.id)===place.id)?.items||[]
+ const dispatch=(kind,extra)=>run({kind,id:place.id,...extra})
+ function show(index){
+   inspected=index;panel.replaceChildren()
+   const prop=objects[cell]?.[index];if(!prop)return
+   panel.append(el('strong',prop[0]+'　'))
+   const action=commands[index]
+   if(inside&&action)panel.append(button(action,()=>dispatch('act',{action})))
+   if(!inside)panel.append(el('span','地点预览'))
+   goods.filter((_,i)=>i%3===index).forEach(item=>{const label=item.name+' · '+item.price+' 镇币';panel.append(inside?button('购买 '+label,()=>dispatch('buy',{item:item.id})):el('span','　'+label))})
+ }
+ for(const [index,[name,x,y]] of (objects[cell]||[]).entries()){
+   const n=button(name,()=>show(index));n.className='prop';position(n,x,y);stage.append(n)
+ }
+ if(inspected!==null)show(inspected)
+ if(inside){const n=el('span');n.className='person';n.append(avatar());position(n,49,85);stage.append(n)}
+ for(const [index,npc] of (state.npcs||[]).filter(n=>n.locationId===place.id).entries()){
+   const n=button(npc.name,()=>{panel.replaceChildren(el('span',npc.activity||npc.name));if(inside)panel.append(button('聊几句',()=>dispatch('npc-talk',{npcId:npc.id,text:'在'+place.name+'见面'})))})
+   n.className='prop';position(n,18+index*16,85);stage.append(n)
+ }
+ if(place.id!=='fish-home')return
+ for(const item of state.homeDecor||[]){
+   const id=item.instanceId||item.id
+   const n=button(/灯/.test(item.name)?'🏮':/花|盆/.test(item.name)?'🪴':/椅|凳/.test(item.name)?'🪑':/架|书/.test(item.name)?'📚':'📦',()=>{})
+   n.title=item.name;n.setAttribute('aria-label',item.name);n.className='furniture';position(n,item.x??50,item.y??50)
+   n.style.transform='translate(-50%,-50%) rotate('+(Number(item.rotation)||0)+'deg)'
+   stage.append(n);if(!inside)continue
+   let start=null
+   n.onpointerdown=e=>{if(busy)return;dragging=true;start=[e.clientX,e.clientY];n.setPointerCapture(e.pointerId)}
+   function point(e){const b=stage.getBoundingClientRect();return [Math.round((e.clientX-b.left)/b.width*100),Math.round((e.clientY-b.top)/b.height*100)].map(v=>Math.max(2,Math.min(98,v)))}
+   n.onpointermove=e=>{if(start)position(n,...point(e))}
+   n.onpointerup=e=>{if(!start)return;const moved=Math.hypot(e.clientX-start[0],e.clientY-start[1])>4;dragging=false;start=null;if(moved){const [x,y]=point(e);dispatch('decorate',{item:id,decorAction:'move',room:item.room,x,y})}else{panel.replaceChildren(el('span',item.name),button('旋转',()=>dispatch('decorate',{item:id,decorAction:'rotate',rotation:(item.rotation||0)+15})),button('收回',()=>dispatch('decorate',{item:id,decorAction:'remove'})))}}
+   n.onpointercancel=()=>{start=null;dragging=false;draw()}
+ }
+}
+async function run(payload){if(busy)return;busy=true;revision++;draw();try{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const v=await r.json();if(!r.ok)throw Error(v.error);state=v;$('notice').textContent='已记录'+({travel:'本次步行',buy:'本次购买',act:'本次活动',work:'工作',decorate:'房屋布置'}[payload.kind]||'操作')}catch(e){$('notice').textContent=e.message}finally{busy=false;draw()}}
+async function poll(){const version=revision;try{if(busy||dragging)return;const r=await fetch('/state');if(!r.ok)throw Error();const next=await r.json();if(version!==revision||dragging)return;if(JSON.stringify(next)!==JSON.stringify(state)){state=next;draw()}$('sync').textContent='● 已同步 '+new Date().toLocaleTimeString()}catch{$('sync').textContent='连接中断 · 正在重试'}finally{setTimeout(poll,Math.max(1,Number(window.TOWN_REFRESH_SECONDS||2))*1000)}}poll()
+</script></html>

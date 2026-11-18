@@ -10,6 +10,7 @@
 packages/
   fish-growth/     情绪 + 内分泌 + 性格成长的 DSH 插件（后台 + 设置页）
   whale-bridge/    数字生命卡（SYNAPSE-1024）的会话级接入插件
+  town-life/       橡溪镇生活线：实时地图网页 + 店铺内景 + 货币 NPC + 小屋自由装修
 tools/             微信直发 / 语音气泡 / 朋友圈 / TTS / B站摘要 等脚本
 docs/              微信接入、记忆架构两份说明
 ```
@@ -37,6 +38,19 @@ docs/              微信接入、记忆架构两份说明
 - 卡里没翻到就回「没翻到」，连不上就说没连上——不许编。
 
 职责划分是刻意分开的：**卡管事实与记忆，fish-growth 管情绪与人格**，避免两套情绪、两套人格互相打架。
+
+### packages/town-life
+
+给小渊一座能过日子的小镇：14 个地点、11 家店、6 位居民，网页只是观察窗口。
+
+- **网页地图** `http://127.0.0.1:18763/`：每 2 秒拉 `/state` 重绘；进店换成该店的室内场景图，热点可点；她出门时能看到小头像沿路走；
+- **一份存档**：位置、余额、背包、NPC 关系、小屋家具都在 `~/.dsh/town-life.json`，和你跟她聊天时读到的是同一份事实；
+- **旅行要时间**：步行 / 坐车两种方式，走完才真正换地点；
+- **小屋自由装修**：家具可放置、拖动、旋转、收回，按 `room / x / y / rotation` 存；
+- **11 个工具**：`town_life_status` / `enter` / `travel` / `shop` / `act` / `work` / `decorate` / `npc_talk` / `event` / `event_suggestion` / `weather`；
+- **设置页面板**：实况 + 可改配置，保存自己原子写 `~/.dsh/town-life.settings.json`，不走 profile 热重载（避开 `root Include entry` 那个报错）。
+
+场景图是合成的 `lib/scenes/*.webp`，不是实时 3D。天气走 Open-Meteo，超时退回缓存并标 `live:false`。细节见 `packages/town-life/README.md`。
 
 ### tools/
 

@@ -1,0 +1,16 @@
+# 橡溪镇生活线（bundle 行）
+# 装好后：地图 http://127.0.0.1:18763/ ，设置页左栏出现「橡溪镇」
+- insert:
+    - id: town-life
+      name: dsh-town-life
+      config:
+        enabled: true
+        # 不写 stateFile 时默认存到 ~/.dsh/town-life.json，想换位置再填绝对路径
+        eventMode: 'daily'
+        allowFreeActions: true
+        weatherCity: '成都'
+        townScale: 'expanded'
+        showNpcDetails: true
+        showDecorDetails: true
+        mapRefreshSeconds: 2
+        defaultDecorRoom: '小书桌与日记本'

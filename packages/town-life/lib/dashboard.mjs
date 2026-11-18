@@ -1,0 +1,63 @@
+import http from 'node:http'
+import { existsSync, readFileSync } from 'node:fs'
+import { status, act, buy, travel, enter, decorate, work, npcTalk, eventSuggestion } from './state.mjs'
+
+const port = Number(process.env.TOWN_PORT || 18763)
+const host = '127.0.0.1'
+const address = host + ':' + port
+export const dashboardUrl = 'http://' + address + '/'
+const pageFile = new URL('./town.html', import.meta.url)
+const mapFile = new URL('./oakbrook.webp', import.meta.url)
+const send = (res, code, value) => {
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
+  res.end(JSON.stringify(value))
+}
+export function startDashboard(config = { stateFile: process.env.DSH_TOWN_LIFE_FILE || process.env.TOWN_STATE_FILE }) {
+  const server = http.createServer(async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store')
+    res.setHeader('X-Frame-Options', 'DENY')
+    if (req.headers.host !== address) return send(res, 403, {})
+    try {
+      if (req.method === 'GET' && req.url === '/') {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+        const html = readFileSync(pageFile, 'utf8').replace('window.TOWN_REFRESH_SECONDS||2', String(Math.max(1, Number(config.mapRefreshSeconds) || 2)))
+        return res.end(html.replace("const sceneRoot='http://127.0.0.1:18764/scenes/'", "const sceneRoot='/scenes/'"))
+      }
+      if (req.method === 'GET' && /^\/scenes\/[a-z0-9-]+\.webp$/.test(req.url)) {
+        const file = new URL('.' + req.url, import.meta.url)
+        if (!existsSync(file)) return send(res, 404, {})
+        res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'private, max-age=600' })
+        return res.end(readFileSync(file))
+      }
+      if (req.method === 'GET' && req.url === '/oakbrook.webp') {
+        res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'private, max-age=600' })
+        return res.end(readFileSync(mapFile))
+      }
+      if (req.method === 'GET' && req.url === '/state') return send(res, 200, status(config).state)
+      if (req.method !== 'POST' || req.url !== '/action') return send(res, 404, {})
+      if (req.headers.origin !== 'http://' + address || req.headers['content-type'] !== 'application/json') return send(res, 403, {})
+      let body = ''
+      for await (const part of req) {
+        body += part
+        if (Buffer.byteLength(body) > 4096) return send(res, 413, {})
+      }
+      const { kind, id, item, action, jobId, npcId, text, mode, room, x, y, rotation, decorAction } = JSON.parse(body)
+      const state = status(config).state
+      if (kind === 'travel') { const current = status(config).state; if (current.travel?.inProgress) throw Error('小渊正在前往另一个地点。'); if (current.openHours && current.openHours[id] === false) throw Error('该地点现在已经关门。'); return send(res, 200, travel(config, id, mode === 'transit' ? 'transit' : 'walk').state) }
+      if (kind !== 'event-suggestion' && state.location?.id !== id) throw Error('小渊的位置已变化，请重新进入地点。')
+      if (kind === 'buy') return send(res, 200, buy(config, id, item).state)
+      if (kind === 'decorate') return send(res, 200, decorate(config, item, { room, x, y, rotation, action: decorAction }).state)
+      if (kind === 'work') return send(res, 200, work(config, jobId).state)
+      if (kind === 'npc-talk') return send(res, 200, npcTalk(config, npcId, text).state)
+      if (kind === 'event-suggestion') return send(res, 200, eventSuggestion(config))
+      if (kind === 'act' && typeof action === 'string' && action.trim() && action.length <= 200)
+        return send(res, 200, act(config, action).state)
+      throw Error('无效操作')
+    } catch (err) { send(res, 400, { error: err.message }) }
+  })
+  server.on('error', err => {
+    if (err.code !== 'EADDRINUSE') console.error('橡溪镇地图', err.message)
+  })
+  server.listen(port, host)
+  return () => server.close()
+}
