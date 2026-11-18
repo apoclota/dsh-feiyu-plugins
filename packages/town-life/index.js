@@ -99,6 +99,13 @@ function townPromptLine() {
   const parts = []
   parts.push('【橡溪镇】' + (s.clock?.label || '') + ' ' + (s.clock?.local || '') + '，她在' + (s.location?.name || '镇上') + '。')
   parts.push('精力 ' + Math.round(Number(s.energy ?? 0)) + '/100（' + (tone.energyLabel || '正常') + '），心情 ' + Math.round(Number(s.mood ?? 0)) + '，' + (s.fullness?.label ? '饱食感：' + s.fullness.label + '。' : ''))
+  if (s.travel && s.travel.inProgress) {
+    const from = (s.locations || []).find(x => x.id === s.travel.inProgress.from)
+    const to = (s.locations || []).find(x => x.id === s.travel.inProgress.to)
+    parts.push('她正走在路上：' + (from ? from.name : s.travel.inProgress.from) + ' → ' + (to ? to.name : s.travel.inProgress.to) + '，大约再 ' + Math.max(1, Math.round((Date.parse(s.travel.inProgress.eta) - Date.now()) / 60000)) + ' 分钟到。')
+  } else if (s.plan && s.plan.current) {
+    parts.push('这是她自己排的今天的行程，现在该在' + s.plan.current.locationName + '（' + s.plan.current.label + '）' + (s.plan.next ? '，下一站 ' + s.plan.next.time + ' 去' + s.plan.next.locationName + '。' : '。'))
+  }
   if (s.activity) parts.push('她正在' + s.activity.label + '，还剩 ' + s.activity.remainMinutes + ' 分钟（这段时间也可以聊天，只是手上忙着）。')
   if (s.daily && Array.isArray(s.daily.tasks)) {
     const left = s.daily.tasks.filter(t => !t.done).length

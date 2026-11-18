@@ -1,6 +1,6 @@
 import http from 'node:http'
 import { existsSync, readFileSync } from 'node:fs'
-import { status, act, buy, travel, enter, decorate, work, rest, eat, sell, plant, waterField, harvest, npcTalk, npcGift, eventSuggestion, acceptTask, rerollTasks } from './state.mjs'
+import { status, act, buy, travel, enter, decorate, work, rest, eat, sell, plant, waterField, harvest, npcTalk, npcGift, eventSuggestion, acceptTask, rerollTasks, setAutoPilot } from './state.mjs'
 
 const port = Number(process.env.TOWN_PORT || 18763)
 const host = '127.0.0.1'
@@ -48,8 +48,12 @@ export function startDashboard(config = { stateFile: process.env.DSH_TOWN_LIFE_F
         body += part
         if (Buffer.byteLength(body) > 4096) return send(res, 413, {})
       }
-      const { kind, id, item, action, jobId, npcId, text, mode, room, x, y, rotation, decorAction, seedId, plotIndex, taskId } = JSON.parse(body)
+      const { kind, id, item, action, jobId, npcId, text, mode, room, x, y, rotation, decorAction, seedId, plotIndex, taskId, autoPilot } = JSON.parse(body)
       const state = status(config).state
+  if (kind === 'autopilot') {
+    const toggled = setAutoPilot(config, autoPilot === undefined ? undefined : autoPilot === true || autoPilot === '1')
+    return send(res, 200, { ...toggled.state, plan: toggled.plan, noticeText: toggled.autoPilot ? '自动出门已打开' : '自动出门已关闭，她会留在原地' })
+  }
       if (kind === 'travel') { const current = status(config).state; if (current.travel?.inProgress) throw Error('小渊正在前往另一个地点。'); if (current.openHours && current.openHours[id] === false) throw Error('该地点现在已经关门。'); return send(res, 200, travel(config, id, mode === 'transit' ? 'transit' : 'walk').state) }
       if (kind !== 'event-suggestion' && state.location?.id !== id) throw Error('小渊的位置已变化，请重新进入地点。')
       if (kind === 'buy') return send(res, 200, buy(config, id, item).state)

@@ -224,7 +224,7 @@ function status(config) { const state = tickWorld(fileOf(config), withInterior(r
  const shownNpcs = state.homeVisitor && state.homeVisitor.npcId
    ? movingNpcs.map(n => n.id === state.homeVisitor.npcId ? { ...n, locationId: homeId, activity: '来小屋串门' } : n)
    : movingNpcs
- const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), daily: dailyView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
+ const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), daily: dailyView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), plan: planView(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
         home: { rooms: HOME_ROOMS, items: homeDecor, comfort, visitor: state.homeVisitor || null, lastVisit: state.lastVisit || null, visitCeiling: Math.min(55, Math.round((0.1 + comfort.score / 260) * 100)) },
         homeComfortLevels: COMFORT_LEVELS, relationships: Object.fromEntries(Object.entries(state.relationships || {}).map(([id, rel]) => [id, { ...rel, affinity: affectionOf(rel.score) }])), affectionLevels: AFFECTION_LEVELS, itemCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).length, 0), furnitureCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).filter(item => item.decor).length, 0), openHours, weatherEffect: rain ? '雨天：户外活动减少，NPC更常待在室内。' : '适合户外活动。', currentPhase: phase(state) } } }
 function event(config, mode) { const file = fileOf(config); const state = readTown(file); const today = new Date().toISOString().slice(0, 10); const prior = state.lastEvent && String(state.lastEvent.at || '').slice(0, 10); const key = mode === 'surprise' ? '突发' : prior === today ? '偶然' : 'daily'; const picked = choose(state.events?.[key]?.length ? state.events[key] : DEFAULT_EVENTS[key]); state.lastEvent = { ...picked, mode: key, at: new Date().toISOString() }; state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok: true, mode, event: state.lastEvent, state: withInterior(state) } }
@@ -376,6 +376,125 @@ function gameClock(state) {
   const minute = String(at.getMinutes()).padStart(2, '0')
   return { offsetMinutes: Math.round(offset), local: hour + ':' + minute, hour, label: hour < 6 ? '深夜' : hour < 10 ? '早上' : hour < 13 ? '中午' : hour < 17 ? '下午' : hour < 21 ? '傍晚' : '夜里' }
 }
+/* ===== 每日自动路线 ===== */
+const ROUTE_SLOTS = [
+  { at: 7 * 60 + 20, fixed: 'fish-home', label: '起床，烧水泡茶' },
+  { at: 8 * 60 + 30, pick: ['oakbrook-market', 'oakbrook-post', 'oakbrook-station', 'oakbrook-hardware', 'oakbrook-clothing', 'oakbrook-pharmacy'], label: '出门办事' },
+  { at: 9 * 60 + 40, pick: ['oakbrook-workshop', 'oakbrook-bakery', 'oakbrook-market', 'oakbrook-library', 'oakbrook-flower', 'oakbrook-restaurant'], label: '找点活干' },
+  { at: 12 * 60 + 10, pick: ['oakbrook-restaurant', 'oakbrook-bakery', 'oakbrook-market'], label: '吃午饭' },
+  { at: 14 * 60, pick: ['moonlake-park', 'oakbrook-library', 'oakbrook-furniture', 'lucky-star', 'oakbrook-flower', 'oakbrook-pharmacy'], label: '下午闲逛' },
+  { at: 17 * 60 + 20, pick: ['oakbrook-market', 'oakbrook-clothing', 'oakbrook-hardware', 'oakbrook-furniture'], label: '买点东西' },
+  { at: 19 * 60, fixed: 'moonlake-park', label: '湖边散步' },
+  { at: 21 * 60 + 30, fixed: 'fish-home', label: '回家' },
+  { at: 22 * 60 + 40, fixed: 'fish-home', label: '洗漱、翻两页书' },
+  { at: 23 * 60 + 20, fixed: 'fish-home', label: '睡觉' }
+]
+function hashPick(text, list) {
+  let h = 0
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0
+  return list[Math.abs(h) % list.length]
+}
+function ensurePlan(state, now = new Date()) {
+  const key = dayKeyOf(now)
+  if (state.plan && state.plan.day === key && Array.isArray(state.plan.steps) && state.plan.steps.length === ROUTE_SLOTS.length) return false
+  const locations = state.locations || []
+  const steps = ROUTE_SLOTS.map((slot, i) => {
+    const locationId = slot.fixed || hashPick(key + '|' + i + '|' + slot.label, slot.pick)
+    const place = locations.find(x => x.id === locationId)
+    return {
+      id: 'r' + i,
+      index: i,
+      startMin: slot.at,
+      untilMin: i + 1 < ROUTE_SLOTS.length ? ROUTE_SLOTS[i + 1].at : 24 * 60,
+      locationId,
+      locationName: place ? place.name : locationId,
+      label: slot.label
+    }
+  })
+  state.plan = { day: key, createdAt: now.toISOString(), steps }
+  return true
+}
+function planView(state) {
+  const clock = gameClock(state)
+  const minute = clock.hour * 60 + new Date(Date.now() + Number(state.clockOffset || 0) * 60000).getMinutes()
+  const steps = state.plan?.steps || []
+  let currentIndex = -1
+  steps.forEach((step, i) => { if (step.startMin <= minute) currentIndex = i })
+  const decorate = (step, i) => ({
+    ...step,
+    time: String(Math.floor(step.startMin / 60)).padStart(2, '0') + ':' + String(step.startMin % 60).padStart(2, '0'),
+    current: i === currentIndex,
+    passed: i < currentIndex
+  })
+  return {
+    day: state.plan?.day || null,
+    autoPilot: state.autoPilot !== false,
+    current: currentIndex >= 0 ? decorate(steps[currentIndex], currentIndex) : null,
+    next: currentIndex + 1 < steps.length ? decorate(steps[currentIndex + 1], currentIndex + 1) : null,
+    steps: steps.map(decorate)
+  }
+}
+function setAutoPilot(config, on) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  state.autoPilot = on === undefined ? state.autoPilot === false : !!on
+  state.planStep = null
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'autopilot', autoPilot: state.autoPilot, plan: planView(state), state: withInterior(state) }
+}
+function pilotTick(state, now = new Date()) {
+  if (state.autoPilot === false) return false
+  const steps = state.plan?.steps || []
+  if (!steps.length) return false
+  const clock = gameClock(state)
+  const minute = clock.hour * 60 + new Date(Date.now() + Number(state.clockOffset || 0) * 60000).getMinutes()
+  let currentIndex = -1
+  steps.forEach((step, i) => { if (step.startMin <= minute) currentIndex = i })
+  if (currentIndex < 0) return false
+  const step = steps[currentIndex]
+  if (state.activity && state.activity.endsAt && Date.parse(state.activity.endsAt) > now.getTime()) return false
+  if (state.travel?.inProgress) return false
+  const here = state.location?.id || 'fish-home'
+  if (here === step.locationId) {
+    if (state.planStep === step.id) return false
+    state.planStep = step.id
+    state.planLabel = step.label
+    state.lastAction = { text: step.label + '（在' + step.locationName + '）', at: now.toISOString() }
+    return true
+  }
+  const destination = (state.locations || []).find(x => x.id === step.locationId)
+  if (!destination) return false
+  const walk = Number(destination.walkMinutes ?? 6)
+  const transit = Number(destination.transitMinutes ?? Math.max(2, Math.round(walk / 3)))
+  const mode = walk > 14 ? 'transit' : 'walk'
+  const minutes = mode === 'transit' ? transit : walk
+  const startedAt = now.toISOString()
+  state.travel = {
+    ...(state.travel || {}),
+    mode,
+    auto: true,
+    inProgress: {
+      from: here,
+      to: step.locationId,
+      minutes,
+      mode,
+      auto: true,
+      reason: step.label,
+      startedAt,
+      eta: new Date(now.getTime() + minutes * 60000).toISOString(),
+      progress: 0
+    },
+    lastTrip: { from: here, to: step.locationId, minutes, at: startedAt, auto: true },
+    minutesToday: Number(state.travel?.minutesToday || 0) + minutes,
+    date: now.toISOString().slice(0, 10)
+  }
+  state.planStep = step.id
+  state.planLabel = step.label
+  state.lastAction = { text: '自己出门了：' + step.label + ' → ' + destination.name, at: startedAt }
+  return true
+}
+
 function toneOf(state) {
   const energy = Math.max(0, Math.min(100, Number(state.energy ?? 100)))
   const mood = Math.max(0, Math.min(100, Number(state.mood ?? 50)))
@@ -482,6 +601,8 @@ function tickWorld(file, state, now = new Date()) {
   }
   state.lastClockAt = now.toISOString()
   if (ensureDaily(state, now)) dirty = true
+  if (ensurePlan(state, now)) dirty = true
+  if (pilotTick(state, now)) dirty = true
   if (dirty) { state.updatedAt = now.toISOString(); writeState(file, state) }
   return state
 }
@@ -672,4 +793,4 @@ function harvest(config, plotIndex) {
 
 async function weather(config) { const file = fileOf(config); const state = readTown(file); const w = { ...(state.weather || {}) }; if (w.provider === 'city' && Number.isFinite(Number(w.latitude)) && Number.isFinite(Number(w.longitude))) { try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.latitude}&longitude=${w.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=${encodeURIComponent(w.timezone || 'Asia/Shanghai')}`; const res = await fetch(url, { signal: AbortSignal.timeout(8000) }); if (!res.ok) throw new Error(`weather http ${res.status}`); const data = await res.json(); const c = data.current || {}; w.temperatureC = c.temperature_2m ?? w.temperatureC; w.feelsLikeC = c.apparent_temperature ?? w.feelsLikeC; w.humidity = c.relative_humidity_2m ?? w.humidity; w.windKph = c.wind_speed_10m ?? w.windKph; w.condition = String(c.weather_code ?? w.condition); w.updatedAt = new Date().toISOString(); w.source = 'open-meteo city forecast'; const latest = readState(file); latest.weather = w; latest.updatedAt = new Date().toISOString(); writeState(file, latest); return { ok:true, mode:'weather', weather:w, live:true } } catch (error) { return { ok:true, mode:'weather', weather:w, live:false, error:String(error.message || error), note:'实时天气暂时不可用，返回上次城市级缓存。' } } } return { ok:true, mode:'weather', weather:w, live:false, note:'未配置城市坐标。' } }
 
-export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock, DAILY_TASK_POOL, DAILY_REROLLS, dailyView, rerollTasks, acceptTask }
+export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock, DAILY_TASK_POOL, DAILY_REROLLS, dailyView, rerollTasks, acceptTask, planView, pilotTick, setAutoPilot, ROUTE_SLOTS }
