@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: 'dsh-town-life',
+  id: '@local/town-life-v103',
   factory: (require) => {
     const React = require('react');
     const h = React.createElement;

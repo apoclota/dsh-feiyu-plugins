@@ -1,5 +1,5 @@
 import { dashboardUrl, startDashboard } from './lib/dashboard.mjs'
-import { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion } from './lib/state.mjs'
+import { npcGift, DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion } from './lib/state.mjs'
 import { loadHostDeps } from './lib/hostdeps.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -137,6 +137,7 @@ export function apply(ctx, config = {}) {
   reg({ name: 'town_life_decorate', description: '把已购买物品布置进月镜湖芦苇湾水边小屋并持久化房屋状态。', parameters: { type: 'object', required: ['itemId'], properties: { itemId: { type: 'string' } }, additionalProperties: false } }, async ({ itemId }) => decorate(config, itemId))
   reg({ name: 'town_life_work', description: '在小镇做一份安全的生活工作，获得小镇币并消耗精力。', parameters: { type: 'object', properties: { jobId: { type: 'string', enum: ['lake-helper', 'shop-helper', 'diary-copyist'], default: 'lake-helper' } }, additionalProperties: false } }, async ({ jobId = 'lake-helper' }) => work(config, jobId))
   reg({ name: 'town_life_npc_talk', description: '与当前小镇 NPC 互动并记录关系变化。', parameters: { type: 'object', required: ['npcId'], properties: { npcId: { type: 'string' }, text: { type: 'string', maxLength: 200 } }, additionalProperties: false } }, async ({ npcId, text = '' }) => npcTalk(config, npcId, text))
+  reg({ name: 'town_life_npc_gift', description: '把背包里的一件东西送给小镇居民，按喜好提升好感度并返回对方反应。', parameters: { type: 'object', required: ['npcId', 'itemId'], properties: { npcId: { type: 'string' }, itemId: { type: 'string' } }, additionalProperties: false } }, async ({ npcId, itemId }) => npcGift(config, npcId, itemId))
   reg({ name: 'town_life_event_suggestion', description: '根据现实时间、天气和地点给出一条正在流动的生活事件建议。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => eventSuggestion(config))
   reg({ name: 'town_life_weather', description: '读取成都城市级天气状态；未接入真实天气服务时会明确标注占位。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => weather(config))
   try { registerSettingsRoutes(ctx) } catch (error) { console.error('橡溪镇设置接口注册失败（不影响插件本身）', error && error.message) }

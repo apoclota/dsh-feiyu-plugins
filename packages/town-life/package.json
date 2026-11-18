@@ -1,7 +1,7 @@
 {
   "name": "dsh-town-life",
-  "version": "1.0.4",
-  "description": "橡溪镇生活线：给小渊一座可生活的 2D 小镇，带实时地图网页、店铺内景、货币与 NPC，以及小屋自由装修和设置页面板。",
+  "version": "1.1.0",
+  "description": "橡溪镇生活线：15 个地点、12 家商店、60 件可购买物品（含 39 件家具）、背包与小镇币、NPC 好感度与送礼、自由布置小屋、2D 模型与可替换的自绘图、实时地图与设置面板。",
   "license": "MIT",
   "type": "module",
   "main": "index.js",
@@ -11,11 +11,35 @@
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.svg"
   },
-  "files": ["index.js", "client.js", "lib", "cordis.patch.yml", "locale", "docs", "icon.svg", "README.md"],
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "cordis.patch.yml",
+    "locale",
+    "docs",
+    "icon.svg",
+    "README.md"
+  ],
   "dsh": {
-    "bundle": { "patch": "./cordis.patch.yml" },
-    "client": { "platform": "web", "inject": ["slots"], "external": ["react"] }
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "slots"
+      ],
+      "external": [
+        "react"
+      ]
+    }
   },
-  "engines": { "node": ">=22", "dsh": ">=0.2.1-rc.2" },
-  "scripts": { "town": "node lib/serve.mjs" }
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.1-rc.2"
+  },
+  "scripts": {
+    "town": "node lib/serve.mjs"
+  }
 }

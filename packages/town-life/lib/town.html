@@ -2,7 +2,24 @@
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>橡溪镇 · 生活地图</title>
 <style>
 *{box-sizing:border-box}body{margin:0;color:#293d34;background:#f3efe5;font:15px/1.6 "Microsoft YaHei",sans-serif}main{max-width:1640px;margin:auto;padding:20px clamp(14px,3vw,52px)}header,footer,.row,.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px}header{border-bottom:1px solid #c9c7b7;padding-bottom:12px}small{color:#5c6d60}h1,h2,h3{font-family:Georgia,"SimSun",serif;margin:.18em 0}h1{font-size:clamp(32px,4vw,52px);letter-spacing:.09em}h3{font-size:16px;margin-top:14px}article{display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,23vw,355px);gap:16px;margin:18px 0;align-items:start}button{font:inherit;color:inherit;cursor:pointer;background:#fcf9ee;border:1px solid #c3c4b0;padding:6px 10px;border-radius:9px}button:hover,button:focus-visible{outline:2px solid #9d7850;outline-offset:1px}button:disabled{opacity:.6}.primary{background:#36594c;color:white}.map,aside{border:1px solid #c6c4af;border-radius:16px;overflow:hidden;background:#fffaf0}.viewport{overflow:auto;max-height:73vh;background:#ddceb3;cursor:grab}.land{position:relative;min-width:770px}.land>img{width:100%;height:auto;display:block;pointer-events:none}.hit{position:absolute;transform:translate(-50%,-100%);width:13%;height:22%;border:0;background:transparent;border-radius:25%}.hit span{position:absolute;left:50%;bottom:0;transform:translateX(-50%);background:#fff7e4ed;color:#403e30;padding:2px 8px;border:1px solid #aa9772;border-radius:16px;white-space:nowrap;font-size:12px}.hit[aria-pressed=true] span{background:#305648;color:white}.traveler{position:absolute;transform:translate(-50%,-100%);pointer-events:none;z-index:3}.traveler img,.fish-avatar img{display:block;width:40px;height:40px;object-fit:cover;border-radius:50%;border:3px solid #fff6d8;box-shadow:0 2px 8px #3d403475}.traveler:after{content:"";position:absolute;left:16px;border:5px solid transparent;border-top-color:#fff6d8}.toolbar{padding:9px 14px;flex-wrap:wrap}.toolbar input{width:86px;vertical-align:middle;accent-color:#44674f}aside{padding:18px;max-height:81vh;overflow:auto}aside p{margin:5px 0 12px}.choices,.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.row{padding:5px 0;border-bottom:1px solid #e4dfd1}.choices button,.row button{font-size:13px}footer{flex-wrap:wrap;border-top:1px solid #c9c7b7;padding-top:12px}footer>div:first-child{display:grid;grid-template-columns:auto 1fr;column-gap:8px}.fish-avatar{grid-row:1/3}#notice{position:sticky;bottom:0;background:#fff5d9;color:#764c2f;border-radius:8px;padding:6px}#notice:empty{display:none}#room{background:radial-gradient(ellipse at center,#fdf6e7,#dbccae);text-align:center;padding:8px}#room[hidden],.viewport[hidden],label[hidden]{display:none}#stage{position:relative;margin:auto;width:min(100%,65vh);aspect-ratio:1;background-size:cover;border-radius:8px;overflow:hidden}.prop,.furniture,.person{position:absolute;transform:translate(-50%,-50%);background:#fff9ebeb;font-size:12px;box-shadow:0 2px 5px #30291942}.prop{border-radius:20px;padding:3px 7px}.furniture{touch-action:none;cursor:move;font-size:22px}.person{border-radius:50%;padding:1px}.person img{width:32px;height:32px;border-radius:50%;display:block}#object-panel{min-height:2.4em;padding:5px}#object-panel button{margin-left:6px}#stats,#activity{color:#536659}#sync{display:block} @media(max-width:850px){article{grid-template-columns:1fr}aside{max-height:none}.viewport{max-height:62vh}.toolbar{padding:7px}.hit span{font-size:11px}main{padding:12px}h1{font-size:34px}}
-.route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.route polyline{fill:none;stroke:#265f55;stroke-width:.65;stroke-dasharray:1.15 .85;stroke-linecap:round;filter:drop-shadow(0 0 .3px white)} #back[hidden]{display:none}</style><main><header><div><small>月镜湖畔 ／ 生活地图</small><h1>橡溪镇</h1></div><div><small id="sync" role="status">连接中</small></div></header>
+.route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.route polyline{fill:none;stroke:#265f55;stroke-width:.65;stroke-dasharray:1.15 .85;stroke-linecap:round;filter:drop-shadow(0 0 .3px white)} #back[hidden]{display:none}
+.sprite{display:block;line-height:0;pointer-events:none}
+.sprite svg{width:100%;height:100%;display:block}
+.furniture{position:absolute;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;border-radius:8px;cursor:grab}
+.furniture.sel{outline:2px dashed #9d7850;outline-offset:3px}
+.thumb{flex:0 0 auto;line-height:0}
+.goods-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.goods-row .sprite{width:30px;height:30px}
+.goods-row button{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.furniture .sprite{filter:drop-shadow(0 3px 3px rgba(40,32,20,.28))}
+.furniture .sprite img{filter:none}
+.hearts{color:#b4655f;letter-spacing:2px;font-size:12px}
+.affinity{display:flex;gap:6px;align-items:center;font-size:12px;color:#5c6d60}
+.affinity .bar{flex:1;min-width:46px;height:6px;background:#e3dbc8;border-radius:4px;overflow:hidden}
+.affinity .bar>i{display:block;height:100%;background:#9d7850}
+.npc-tag{display:flex;flex-direction:column;align-items:center;gap:2px}
+.npc-tag .hearts{font-size:11px}
+</style><main><header><div><small>月镜湖畔 ／ 生活地图</small><h1>橡溪镇</h1></div><div><small id="sync" role="status">连接中</small></div></header>
 <article><section class="map" aria-label="小镇地图"><div class="viewport" id="viewport"><div class="land" id="land"><img width="1536" height="1024" alt="沿月镜湖展开的立体小镇，湖边木屋、商业街与南侧铁路相连"><div id="pins" aria-label="小镇与小渊位置"></div></div></div><section id="room" hidden><div id="stage"></div><div id="object-panel" aria-live="polite"></div></section><div class="toolbar"><button id="back" hidden>返回街区</button><label id="zoom-label">地图缩放 <input id="zoom" type="range" min="100" max="200" step="25" value="100"></label><button id="locate">定位小渊</button></div></section>
 <aside><small>地点手册</small><div id="details"></div><p id="notice" role="status"></p></aside></article><footer><div><small>居民动态</small><h2 id="resident">小渊</h2><small id="map-help"></small></div><div id="stats"></div></footer><p id="activity"></p></main>
 <script>
@@ -61,6 +78,108 @@ $('zoom').oninput=e=>zoom(e.target.value)
 $('back').onclick=()=>select(selected)
 $('locate').onclick=()=>{if(state){select(state.travel?.inProgress?.to||state.location?.id);$('pins').querySelector('.traveler')?.scrollIntoView({block:'nearest',inline:'center'})}}
 const sceneRoot='http://127.0.0.1:18764/scenes/'
+const spriteRoot=sceneRoot.replace(/scenes\/$/,'sprites/')
+const PAL={w:'#b5804f',w2:'#8d5c34',c:'#f6ead4',c2:'#e2cfae',g:'#9dbfae',g2:'#6d9282',b:'#89aecb',b2:'#5e86a6',p:'#e3a8a8',y:'#e2b95e',l:'#6f9b5c',l2:'#4d7544',i:'#3b3833',f:'#fdf9f2',r:'#cf7b6a'}
+const MODELS={
+ sofa:{w:110,h:66,svg:'<svg viewBox="0 0 100 60"><rect x="4" y="26" width="92" height="26" rx="7" fill="#9dbfae"/><rect x="4" y="13" width="92" height="18" rx="7" fill="#6d9282"/><rect x="10" y="31" width="34" height="12" rx="4" fill="#f6ead4"/><rect x="56" y="31" width="34" height="12" rx="4" fill="#f6ead4"/><rect x="8" y="51" width="6" height="7" fill="#8d5c34"/><rect x="86" y="51" width="6" height="7" fill="#8d5c34"/></svg>'},
+ armchair:{w:76,h:76,svg:'<svg viewBox="0 0 100 100"><rect x="20" y="44" width="60" height="34" rx="10" fill="#e3a8a8"/><rect x="20" y="20" width="60" height="30" rx="12" fill="#cf7b6a"/><rect x="8" y="50" width="12" height="26" rx="6" fill="#cf7b6a"/><rect x="80" y="50" width="12" height="26" rx="6" fill="#cf7b6a"/><rect x="26" y="78" width="8" height="10" fill="#8d5c34"/><rect x="66" y="78" width="8" height="10" fill="#8d5c34"/></svg>'},
+ table:{w:110,h:80,svg:'<svg viewBox="0 0 100 74"><rect x="4" y="18" width="92" height="12" rx="4" fill="#b5804f"/><rect x="14" y="30" width="8" height="36" fill="#8d5c34"/><rect x="78" y="30" width="8" height="36" fill="#8d5c34"/><rect x="22" y="66" width="56" height="6" rx="3" fill="#8d5c34"/></svg>'},
+ lowtable:{w:96,h:60,svg:'<svg viewBox="0 0 100 62"><rect x="4" y="20" width="92" height="12" rx="4" fill="#c98f5c"/><rect x="12" y="32" width="7" height="24" fill="#8d5c34"/><rect x="81" y="32" width="7" height="24" fill="#8d5c34"/><rect x="26" y="46" width="48" height="5" rx="2" fill="#8d5c34"/></svg>'},
+ stool:{w:48,h:48,svg:'<svg viewBox="0 0 100 100"><ellipse cx="50" cy="30" rx="34" ry="14" fill="#d1a06a"/><rect x="16" y="30" width="68" height="10" fill="#b5804f"/><rect x="24" y="40" width="8" height="42" fill="#8d5c34"/><rect x="68" y="40" width="8" height="42" fill="#8d5c34"/><rect x="30" y="58" width="40" height="6" fill="#8d5c34"/></svg>'},
+ desk:{w:110,h:72,svg:'<svg viewBox="0 0 100 66"><rect x="2" y="16" width="96" height="11" rx="3" fill="#b5804f"/><rect x="6" y="27" width="40" height="26" rx="3" fill="#c98f5c"/><rect x="14" y="33" width="24" height="4" rx="2" fill="#8d5c34"/><rect x="14" y="41" width="24" height="4" rx="2" fill="#8d5c34"/><rect x="52" y="27" width="8" height="32" fill="#8d5c34"/><rect x="88" y="27" width="8" height="32" fill="#8d5c34"/><rect x="20" y="10" width="22" height="6" rx="2" fill="#e2cfae"/></svg>'},
+ bookshelf:{w:76,h:120,svg:'<svg viewBox="0 0 100 158"><rect x="6" y="4" width="88" height="150" rx="5" fill="#8d5c34"/><rect x="12" y="10" width="76" height="30" fill="#f6ead4"/><rect x="16" y="14" width="8" height="24" fill="#cf7b6a"/><rect x="27" y="16" width="8" height="22" fill="#89aecb"/><rect x="38" y="14" width="7" height="24" fill="#6f9b5c"/><rect x="48" y="18" width="9" height="20" fill="#e2b95e"/><rect x="60" y="14" width="7" height="24" fill="#6d9282"/><rect x="12" y="48" width="76" height="30" fill="#f6ead4"/><rect x="16" y="52" width="9" height="24" fill="#89aecb"/><rect x="28" y="54" width="8" height="22" fill="#e3a8a8"/><rect x="40" y="52" width="7" height="24" fill="#6f9b5c"/><rect x="12" y="86" width="76" height="30" fill="#f6ead4"/><rect x="16" y="90" width="8" height="24" fill="#e2b95e"/><rect x="27" y="92" width="9" height="22" fill="#6d9282"/><rect x="12" y="124" width="76" height="26" fill="#f6ead4"/><rect x="16" y="128" width="8" height="20" fill="#cf7b6a"/><rect x="27" y="130" width="8" height="18" fill="#6f9b5c"/></svg>'},
+ shelf:{w:88,h:44,svg:'<svg viewBox="0 0 100 50"><rect x="4" y="26" width="92" height="8" rx="3" fill="#b5804f"/><rect x="12" y="34" width="6" height="10" fill="#8d5c34"/><rect x="82" y="34" width="6" height="10" fill="#8d5c34"/><rect x="18" y="10" width="10" height="16" rx="2" fill="#cf7b6a"/><rect x="32" y="12" width="9" height="14" rx="2" fill="#89aecb"/><rect x="46" y="8" width="8" height="18" rx="2" fill="#6f9b5c"/><rect x="58" y="12" width="11" height="14" rx="2" fill="#e2b95e"/></svg>'},
+ bed:{w:130,h:86,svg:'<svg viewBox="0 0 100 66"><rect x="2" y="34" width="96" height="24" rx="5" fill="#b5804f"/><rect x="6" y="16" width="24" height="20" rx="6" fill="#f6ead4"/><rect x="2" y="10" width="96" height="8" rx="4" fill="#8d5c34"/><rect x="32" y="34" width="64" height="14" rx="6" fill="#9dbfae"/><rect x="34" y="20" width="60" height="16" rx="7" fill="#f6ead4"/><rect x="4" y="58" width="6" height="7" fill="#8d5c34"/><rect x="90" y="58" width="6" height="7" fill="#8d5c34"/></svg>'},
+ cabinet:{w:96,h:70,svg:'<svg viewBox="0 0 100 74"><rect x="8" y="6" width="84" height="60" rx="4" fill="#c98f5c"/><rect x="14" y="12" width="34" height="48" rx="2" fill="#e2cfae"/><rect x="52" y="12" width="34" height="48" rx="2" fill="#e2cfae"/><circle cx="44" cy="36" r="2.5" fill="#8d5c34"/><circle cx="56" cy="36" r="2.5" fill="#8d5c34"/><rect x="12" y="66" width="8" height="8" fill="#8d5c34"/><rect x="80" y="66" width="8" height="8" fill="#8d5c34"/></svg>'},
+ wardrobe:{w:84,h:126,svg:'<svg viewBox="0 0 100 150"><rect x="10" y="4" width="80" height="140" rx="4" fill="#8d5c34"/><rect x="16" y="10" width="32" height="128" fill="#c98f5c"/><rect x="52" y="10" width="32" height="128" fill="#c98f5c"/><circle cx="44" cy="74" r="3" fill="#e2b95e"/><circle cx="56" cy="74" r="3" fill="#e2b95e"/><rect x="16" y="132" width="68" height="6" fill="#b5804f"/></svg>'},
+ rug:{w:120,h:64,svg:'<svg viewBox="0 0 100 54"><ellipse cx="50" cy="27" rx="47" ry="24" fill="#e3a8a8"/><ellipse cx="50" cy="27" rx="36" ry="17" fill="#f6ead4"/><ellipse cx="50" cy="27" rx="22" ry="9" fill="#e3a8a8"/></svg>'},
+ mirror:{w:56,h:104,svg:'<svg viewBox="0 0 100 186"><rect x="8" y="4" width="84" height="178" rx="42" fill="#8d5c34"/><ellipse cx="50" cy="93" rx="33" ry="77" fill="#cfe3ee"/><path d="M28 60 L52 42 L44 78 Z" fill="#ffffff" opacity=".6"/></svg>'},
+ painting:{w:78,h:58,svg:'<svg viewBox="0 0 100 74"><rect x="4" y="4" width="92" height="66" rx="3" fill="#8d5c34"/><rect x="12" y="12" width="76" height="50" fill="#cfe3ee"/><circle cx="72" cy="26" r="9" fill="#e2b95e"/><path d="M12 62 L40 30 L58 50 L72 38 L88 62 Z" fill="#6f9b5c"/></svg>'},
+ clock:{w:48,h:48,svg:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#e2b95e"/><circle cx="50" cy="50" r="34" fill="#fdf9f2"/><rect x="48" y="26" width="4" height="26" rx="2" fill="#3b3833"/><rect x="50" y="48" width="20" height="4" rx="2" fill="#3b3833"/><circle cx="50" cy="50" r="3" fill="#cf7b6a"/></svg>'},
+ 'floor-lamp':{w:46,h:104,svg:'<svg viewBox="0 0 100 226"><path d="M22 70 L78 70 L66 8 L34 8 Z" fill="#e2b95e"/><rect x="46" y="70" width="8" height="130" fill="#8d5c34"/><ellipse cx="50" cy="206" rx="30" ry="10" fill="#8d5c34"/><ellipse cx="50" cy="70" rx="28" ry="6" fill="#fdf9f2" opacity=".7"/></svg>'},
+ lamp:{w:42,h:56,svg:'<svg viewBox="0 0 100 132"><path d="M20 56 L80 56 L68 6 L32 6 Z" fill="#e2b95e"/><rect x="46" y="56" width="8" height="52" fill="#8d5c34"/><ellipse cx="50" cy="114" rx="28" ry="8" fill="#8d5c34"/></svg>'},
+ plant:{w:48,h:64,svg:'<svg viewBox="0 0 100 132"><path d="M30 78 L70 78 L64 126 L36 126 Z" fill="#c98f5c"/><path d="M50 78 C50 40 30 30 22 18 C44 22 50 46 50 78Z" fill="#6f9b5c"/><path d="M50 78 C50 34 72 26 80 12 C72 44 58 56 50 78Z" fill="#4d7544"/><path d="M50 78 C50 44 54 30 50 8 C42 32 46 56 50 78Z" fill="#6f9b5c"/></svg>'},
+ vase:{w:36,h:56,svg:'<svg viewBox="0 0 100 156"><path d="M34 70 C24 96 26 132 50 150 C74 132 76 96 66 70 Z" fill="#89aecb"/><rect x="38" y="62" width="24" height="10" rx="3" fill="#5e86a6"/><path d="M50 62 L50 26" stroke="#4d7544" stroke-width="4"/><circle cx="42" cy="22" r="9" fill="#e3a8a8"/><circle cx="58" cy="16" r="8" fill="#e2b95e"/><circle cx="58" cy="34" r="7" fill="#cf7b6a"/></svg>'},
+ hanging:{w:44,h:66,svg:'<svg viewBox="0 0 100 150"><path d="M20 6 L80 6" stroke="#8d5c34" stroke-width="5"/><path d="M30 6 L50 44 M70 6 L50 44" stroke="#8d5c34" stroke-width="3"/><circle cx="50" cy="70" r="26" fill="#c98f5c"/><path d="M30 62 C14 80 20 108 34 118 C34 96 30 78 30 62Z" fill="#6f9b5c"/><path d="M70 62 C86 80 80 108 66 118 C66 96 70 78 70 62Z" fill="#4d7544"/><path d="M50 44 C44 70 44 96 50 118 C56 96 56 70 50 44Z" fill="#6f9b5c"/></svg>'},
+ flowers:{w:40,h:56,svg:'<svg viewBox="0 0 100 140"><path d="M42 60 L58 60 L62 134 L38 134 Z" fill="#cfe3ee"/><circle cx="34" cy="42" r="13" fill="#e3a8a8"/><circle cx="62" cy="34" r="14" fill="#e2b95e"/><circle cx="50" cy="56" r="12" fill="#cf7b6a"/><circle cx="70" cy="58" r="10" fill="#89aecb"/><path d="M34 60 L38 86 M62 56 L58 90 M50 70 L50 96" stroke="#4d7544" stroke-width="4"/></svg>'},
+ candle:{w:28,h:40,svg:'<svg viewBox="0 0 100 142"><rect x="30" y="54" width="40" height="80" rx="6" fill="#f6ead4"/><ellipse cx="50" cy="54" rx="20" ry="6" fill="#e2cfae"/><path d="M50 54 C50 38 58 32 50 16 C42 32 46 44 50 54Z" fill="#e2b95e"/><path d="M50 50 C52 40 50 34 50 26 C48 36 48 44 50 50Z" fill="#fdf9f2"/></svg>'},
+ curtain:{w:78,h:92,svg:'<svg viewBox="0 0 100 118"><rect x="2" y="4" width="96" height="6" rx="3" fill="#8d5c34"/><path d="M10 10 L40 10 L34 114 L8 114 Z" fill="#cfe3ee"/><path d="M60 10 L90 10 L92 114 L66 114 Z" fill="#cfe3ee"/><path d="M18 10 L26 10 L22 114 L16 114 Z" fill="#89aecb" opacity=".6"/><path d="M70 10 L78 10 L80 114 L74 114 Z" fill="#89aecb" opacity=".6"/></svg>'},
+ cushion:{w:52,h:52,svg:'<svg viewBox="0 0 100 100"><rect x="8" y="10" width="84" height="80" rx="18" fill="#e3a8a8"/><rect x="22" y="24" width="56" height="52" rx="12" fill="#f6ead4" opacity=".7"/><circle cx="50" cy="50" r="6" fill="#cf7b6a"/></svg>'},
+ blanket:{w:60,h:48,svg:'<svg viewBox="0 0 100 80"><rect x="6" y="12" width="88" height="58" rx="8" fill="#9dbfae"/><path d="M6 34 L94 34 M6 50 L94 50" stroke="#6d9282" stroke-width="4"/><path d="M30 12 L30 70 M62 12 L62 70" stroke="#6d9282" stroke-width="3" opacity=".6"/></svg>'},
+ bench:{w:96,h:56,svg:'<svg viewBox="0 0 100 60"><rect x="4" y="18" width="92" height="8" rx="3" fill="#b5804f"/><rect x="4" y="4" width="92" height="8" rx="3" fill="#c98f5c"/><rect x="10" y="12" width="6" height="8" fill="#8d5c34"/><rect x="84" y="12" width="6" height="8" fill="#8d5c34"/><rect x="10" y="26" width="7" height="28" fill="#8d5c34"/><rect x="83" y="26" width="7" height="28" fill="#8d5c34"/></svg>'},
+ 'rocking-chair':{w:72,h:84,svg:'<svg viewBox="0 0 100 116"><rect x="26" y="30" width="48" height="10" rx="4" fill="#c98f5c"/><rect x="26" y="6" width="10" height="30" rx="4" fill="#b5804f"/><rect x="64" y="6" width="10" height="30" rx="4" fill="#b5804f"/><rect x="30" y="40" width="7" height="34" fill="#8d5c34"/><rect x="63" y="40" width="7" height="34" fill="#8d5c34"/><path d="M8 100 Q50 118 92 100" stroke="#8d5c34" stroke-width="7" fill="none"/><rect x="20" y="86" width="60" height="7" rx="3" fill="#b5804f"/></svg>'},
+ 'coat-rack':{w:46,h:100,svg:'<svg viewBox="0 0 100 218"><rect x="46" y="20" width="8" height="180" fill="#8d5c34"/><path d="M50 22 L18 46 M50 22 L82 46 M50 40 L30 60" stroke="#8d5c34" stroke-width="6"/><path d="M22 46 L34 96 L14 96 Z" fill="#e3a8a8"/><path d="M78 46 L92 96 L66 96 Z" fill="#89aecb"/><ellipse cx="50" cy="204" rx="30" ry="8" fill="#8d5c34"/></svg>'},
+ teapot:{w:40,h:34,svg:'<svg viewBox="0 0 100 80"><ellipse cx="50" cy="46" rx="34" ry="26" fill="#f6ead4"/><path d="M84 40 C94 44 94 56 82 58" stroke="#f6ead4" stroke-width="8" fill="none"/><path d="M20 34 C10 34 8 50 20 54" stroke="#f6ead4" stroke-width="7" fill="none"/><rect x="38" y="14" width="24" height="8" rx="4" fill="#c98f5c"/><circle cx="50" cy="12" r="5" fill="#c98f5c"/><path d="M22 46 Q50 56 78 46" stroke="#e2cfae" stroke-width="4" fill="none"/></svg>'},
+ basket:{w:44,h:40,svg:'<svg viewBox="0 0 100 88"><path d="M12 30 L88 30 L78 82 L22 82 Z" fill="#c98f5c"/><path d="M20 44 L80 44 M24 60 L76 60" stroke="#8d5c34" stroke-width="4"/><path d="M28 30 C28 8 72 8 72 30" stroke="#8d5c34" stroke-width="6" fill="none"/></svg>'},
+ frame:{w:46,h:40,svg:'<svg viewBox="0 0 100 88"><rect x="8" y="8" width="84" height="72" rx="4" fill="#8d5c34"/><rect x="18" y="18" width="64" height="52" fill="#f6ead4"/><circle cx="50" cy="44" r="14" fill="#e3a8a8"/><path d="M50 30 L50 58 M36 44 L64 44" stroke="#cf7b6a" stroke-width="3"/></svg>'},
+ radio:{w:48,h:40,svg:'<svg viewBox="0 0 100 84"><rect x="6" y="20" width="88" height="58" rx="6" fill="#b5804f"/><rect x="14" y="28" width="40" height="24" rx="3" fill="#f6ead4"/><circle cx="78" cy="42" r="10" fill="#e2b95e"/><circle cx="78" cy="66" r="6" fill="#8d5c34"/><path d="M60 20 L74 6" stroke="#8d5c34" stroke-width="4"/></svg>'},
+ box:{w:40,h:40,svg:'<svg viewBox="0 0 100 100"><rect x="16" y="30" width="68" height="56" rx="6" fill="#b5804f"/><rect x="16" y="30" width="68" height="14" rx="6" fill="#8d5c34"/><rect x="44" y="30" width="12" height="56" fill="#e2cfae"/></svg>'},
+ bread:{w:44,h:34,svg:'<svg viewBox="0 0 100 76"><path d="M8 54 C8 24 30 10 50 10 C70 10 92 24 92 54 C70 66 30 66 8 54Z" fill="#d1a06a"/><path d="M26 30 L34 42 M44 24 L52 38 M62 26 L70 40" stroke="#b5804f" stroke-width="4"/></svg>'},
+ coffee:{w:36,h:38,svg:'<svg viewBox="0 0 100 106"><rect x="18" y="30" width="56" height="52" rx="8" fill="#fdf9f2"/><rect x="24" y="36" width="44" height="16" rx="4" fill="#8d5c34"/><path d="M74 44 C88 48 88 68 74 72" stroke="#fdf9f2" stroke-width="9" fill="none"/><path d="M40 24 C40 14 46 12 42 2 M58 24 C58 14 64 12 60 2" stroke="#c2b7a6" stroke-width="3" fill="none"/></svg>'},
+ teacup:{w:38,h:34,svg:'<svg viewBox="0 0 100 90"><path d="M14 26 L86 26 L76 60 C72 70 28 70 24 60 Z" fill="#f6ead4"/><path d="M86 34 C100 38 100 56 84 58" stroke="#f6ead4" stroke-width="8" fill="none"/><ellipse cx="50" cy="76" rx="34" ry="8" fill="#e2cfae"/><path d="M40 18 C40 8 46 6 42 -4 M60 18 C60 8 66 6 62 -4" stroke="#c2b7a6" stroke-width="3" fill="none"/></svg>'},
+ soup:{w:46,h:38,svg:'<svg viewBox="0 0 100 82"><path d="M10 34 L90 34 C86 62 64 74 50 74 C36 74 14 62 10 34Z" fill="#fdf9f2"/><path d="M16 34 L84 34 C80 44 68 50 50 50 C32 50 20 44 16 34Z" fill="#e2b95e"/><path d="M34 24 C34 12 40 10 36 0 M52 24 C52 12 58 10 54 0 M70 24 C70 14 76 12 72 2" stroke="#c2b7a6" stroke-width="3" fill="none"/></svg>'},
+ dumpling:{w:46,h:32,svg:'<svg viewBox="0 0 100 68"><path d="M8 46 C8 26 26 16 34 16 C42 16 50 26 50 46 Z" fill="#f6ead4"/><path d="M50 46 C50 26 68 16 76 16 C84 16 92 26 92 46 Z" fill="#e2cfae"/><path d="M14 24 L34 34 M20 18 L36 30" stroke="#d9c8a8" stroke-width="2"/></svg>'},
+ pie:{w:46,h:34,svg:'<svg viewBox="0 0 100 76"><path d="M10 58 L50 16 L90 58 Z" fill="#e2b95e"/><path d="M10 58 L90 58 L94 68 L6 68 Z" fill="#c98f5c"/><path d="M50 16 L50 58" stroke="#b5804f" stroke-width="3"/></svg>'},
+ cake:{w:44,h:42,svg:'<svg viewBox="0 0 100 96"><rect x="12" y="40" width="76" height="22" rx="4" fill="#f6ead4"/><rect x="12" y="62" width="76" height="24" rx="4" fill="#e3a8a8"/><rect x="12" y="36" width="76" height="8" rx="4" fill="#cf7b6a"/><path d="M50 36 L50 18" stroke="#e2b95e" stroke-width="4"/><path d="M50 18 C50 10 54 6 50 2 C46 6 48 14 50 18Z" fill="#e2b95e"/></svg>'},
+ cookie:{w:34,h:34,svg:'<svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="40" fill="#d1a06a"/><circle cx="38" cy="40" r="6" fill="#8d5c34"/><circle cx="62" cy="36" r="5" fill="#8d5c34"/><circle cx="54" cy="62" r="6" fill="#8d5c34"/><circle cx="34" cy="66" r="4" fill="#8d5c34"/></svg>'},
+ book:{w:44,h:38,svg:'<svg viewBox="0 0 100 86"><rect x="12" y="14" width="76" height="58" rx="4" fill="#89aecb"/><rect x="12" y="14" width="12" height="58" fill="#5e86a6"/><rect x="30" y="26" width="48" height="6" rx="3" fill="#f6ead4"/><rect x="30" y="40" width="38" height="5" rx="2" fill="#f6ead4" opacity=".8"/></svg>'},
+ notebook:{w:40,h:42,svg:'<svg viewBox="0 0 100 104"><rect x="14" y="8" width="72" height="88" rx="5" fill="#f6ead4"/><rect x="14" y="8" width="10" height="88" fill="#cf7b6a"/><path d="M34 30 L74 30 M34 48 L74 48 M34 66 L64 66" stroke="#c2b7a6" stroke-width="4"/><rect x="60" y="8" width="26" height="10" fill="#e2b95e"/></svg>'},
+ postcard:{w:46,h:34,svg:'<svg viewBox="0 0 100 74"><rect x="6" y="8" width="88" height="58" fill="#f6ead4"/><rect x="6" y="8" width="58" height="58" fill="#cfe3ee"/><circle cx="24" cy="24" r="7" fill="#e2b95e"/><path d="M6 58 L28 34 L42 48 L52 40 L64 58 Z" fill="#6f9b5c"/><rect x="72" y="16" width="14" height="16" fill="#e3a8a8"/><path d="M70 44 L92 44 M70 54 L84 54" stroke="#c2b7a6" stroke-width="3"/></svg>'},
+ stamp:{w:34,h:38,svg:'<svg viewBox="0 0 100 110"><path d="M14 10 L86 10 L86 100 L14 100 Z" fill="#e3a8a8"/><path d="M14 10 L86 10 L86 100 L14 100 Z" fill="none" stroke="#f6ead4" stroke-width="6" stroke-dasharray="6 6"/><circle cx="50" cy="52" r="22" fill="#f6ead4"/><path d="M50 34 L58 50 L74 52 L62 64 L66 80 L50 70 L34 80 L38 64 L26 52 L42 50 Z" fill="#e2b95e"/></svg>'},
+ envelope:{w:46,h:32,svg:'<svg viewBox="0 0 100 68"><rect x="6" y="10" width="88" height="48" rx="3" fill="#f6ead4"/><path d="M6 10 L50 42 L94 10" stroke="#c2b7a6" stroke-width="4" fill="none"/><circle cx="50" cy="42" r="5" fill="#cf7b6a"/></svg>'},
+ ticket:{w:44,h:30,svg:'<svg viewBox="0 0 100 66"><path d="M6 12 L94 12 L94 26 C84 26 84 40 94 40 L94 54 L6 54 L6 40 C16 40 16 26 6 26 Z" fill="#e2b95e"/><path d="M36 20 L36 46" stroke="#b5804f" stroke-width="3" stroke-dasharray="5 5"/><path d="M48 26 L84 26 M48 38 L72 38" stroke="#b5804f" stroke-width="3"/></svg>'},
+ firstaid:{w:40,h:36,svg:'<svg viewBox="0 0 100 88"><rect x="8" y="20" width="84" height="60" rx="6" fill="#f6ead4"/><rect x="8" y="20" width="84" height="14" rx="6" fill="#e3a8a8"/><rect x="34" y="34" width="12" height="38" fill="#cf7b6a"/><rect x="22" y="46" width="36" height="12" fill="#cf7b6a"/></svg>'},
+ bottle:{w:28,h:44,svg:'<svg viewBox="0 0 100 156"><rect x="34" y="6" width="32" height="18" rx="4" fill="#5e86a6"/><path d="M30 24 L70 24 L78 60 L78 146 L22 146 L22 60 Z" fill="#89aecb"/><rect x="26" y="74" width="48" height="34" fill="#f6ead4"/><path d="M36 84 L64 84 M36 96 L56 96" stroke="#5e86a6" stroke-width="4"/></svg>'},
+ paint:{w:36,h:40,svg:'<svg viewBox="0 0 100 110"><rect x="16" y="26" width="68" height="72" rx="6" fill="#c98f5c"/><ellipse cx="50" cy="26" rx="34" ry="8" fill="#8d5c34"/><path d="M34 26 C34 10 66 10 66 26" stroke="#8d5c34" stroke-width="5" fill="none"/><rect x="36" y="60" width="28" height="20" rx="3" fill="#e3a8a8"/></svg>'},
+ toolbox:{w:46,h:36,svg:'<svg viewBox="0 0 100 80"><rect x="8" y="26" width="84" height="48" rx="6" fill="#cf7b6a"/><rect x="8" y="26" width="84" height="12" rx="6" fill="#b4655f"/><path d="M38 26 C38 12 62 12 62 26" stroke="#8d5c34" stroke-width="6" fill="none"/><rect x="44" y="42" width="12" height="10" fill="#e2b95e"/></svg>'},
+ raincoat:{w:46,h:54,svg:'<svg viewBox="0 0 100 118"><path d="M30 14 L70 14 L86 44 L76 50 L74 114 L26 114 L24 50 L14 44 Z" fill="#89aecb"/><circle cx="50" cy="16" r="10" fill="#5e86a6"/><path d="M50 40 L50 114" stroke="#5e86a6" stroke-width="4"/><circle cx="44" cy="56" r="3" fill="#f6ead4"/><circle cx="44" cy="76" r="3" fill="#f6ead4"/></svg>'},
+ scarf:{w:40,h:46,svg:'<svg viewBox="0 0 100 116"><path d="M18 12 L82 12 L82 40 L18 40 Z" fill="#cf7b6a"/><path d="M24 40 L24 104 L44 104 L44 40 Z" fill="#b4655f"/><path d="M62 40 L62 96 L78 96 L78 40 Z" fill="#b4655f"/><path d="M18 20 L82 20 M18 32 L82 32" stroke="#e3a8a8" stroke-width="4"/><path d="M24 104 L24 114 M32 104 L32 114 M70 96 L70 106" stroke="#b4655f" stroke-width="4"/></svg>'},
+ seed:{w:34,h:40,svg:'<svg viewBox="0 0 100 118"><rect x="14" y="10" width="72" height="98" rx="4" fill="#e2cfae"/><rect x="14" y="10" width="72" height="18" rx="4" fill="#b5804f"/><circle cx="50" cy="62" r="18" fill="#6f9b5c"/><path d="M50 44 L50 80 M34 62 L66 62" stroke="#4d7544" stroke-width="3"/><path d="M26 94 L74 94" stroke="#b5804f" stroke-width="4"/></svg>'}
+}
+const SPRITE_EXT=['png','webp','svg']
+const userSprites=new Map()
+function loadUserSprite(key,index,done){
+  if(userSprites.has(key))return done(userSprites.get(key))
+  const ext=SPRITE_EXT[index]
+  if(!ext){userSprites.set(key,null);return done(null)}
+  const probe=new Image()
+  probe.onload=()=>{userSprites.set(key,spriteRoot+key+'.'+ext);done(userSprites.get(key))}
+  probe.onerror=()=>loadUserSprite(key,index+1,done)
+  probe.src=spriteRoot+key+'.'+ext
+}
+function spriteEl(key,w,h){
+  const model=MODELS[key]||MODELS.box,node=el('div')
+  node.className='sprite';node.dataset.sprite=key
+  node.style.width=(w||model.w)+'px';node.style.height=(h||model.h)+'px'
+  node.innerHTML=model.svg
+  loadUserSprite(key,0,src=>{
+    if(!src)return
+    const img=document.createElement('img');img.src=src;img.alt=''
+    img.style.cssText='width:100%;height:100%;object-fit:contain;display:block'
+    img.onerror=()=>{node.innerHTML=model.svg}
+    node.replaceChildren(img)
+  })
+  return node
+}
+function hearts(count){
+  const filled=Math.max(0,Math.min(5,Number(count)||0))
+  return '♥'.repeat(filled)+'♡'.repeat(5-filled)
+}
+function affinityEl(affinity){
+  const wrap=el('span');wrap.className='affinity'
+  if(!affinity){wrap.append(el('span','初次见面'));return wrap}
+  const bar=el('span');bar.className='bar'
+  const fill=document.createElement('i');fill.style.width=Math.round(Math.max(0,Math.min(1,Number(affinity.progress)||0))*100)+'%'
+  bar.append(fill)
+  wrap.append(el('span',(affinity.label||'初识')+' '+hearts(affinity.hearts)),bar)
+  return wrap
+}
+const SPRITE_RULES=[[/沙发/,'sofa'],[/扶手.*椅/,'armchair'],[/餐桌|饭桌/,'table'],[/茶几|边几|小桌/,'lowtable'],[/凳/,'stool'],[/书桌|写字台/,'desk'],[/书架/,'bookshelf'],[/层架|壁架|搁板|陈列架/,'shelf'],[/衣柜/,'wardrobe'],[/柜/,'cabinet'],[/床/,'bed'],[/地毯/,'rug'],[/落地镜|穿衣镜|镜/,'mirror'],[/画/,'painting'],[/钟/,'clock'],[/落地灯/,'floor-lamp'],[/灯/,'lamp'],[/绿萝|垂吊/,'hanging'],[/盆栽|植物/,'plant'],[/花瓶/,'vase'],[/花/,'flowers'],[/蜡烛/,'candle'],[/窗帘|帘/,'curtain'],[/靠垫|抱枕|垫/,'cushion'],[/毯/,'blanket'],[/长凳|长椅|条凳/,'bench'],[/摇椅/,'rocking-chair'],[/衣架/,'coat-rack'],[/茶壶/,'teapot'],[/篮/,'basket'],[/相框|镜框|画框/,'frame'],[/收音机/,'radio'],[/面包/,'bread'],[/咖啡/,'coffee'],[/茶|杯/,'teacup'],[/汤/,'soup'],[/饺子/,'dumpling'],[/派|挞/,'pie'],[/蛋糕/,'cake'],[/曲奇|饼干/,'cookie'],[/绘本|书/,'book'],[/日记|笔记本|手账|本子/,'notebook'],[/明信片/,'postcard'],[/邮票/,'stamp'],[/信/,'envelope'],[/票/,'ticket'],[/急救/,'firstaid'],[/油漆|漆/,'paint'],[/工具箱|工具/,'toolbox'],[/雨衣/,'raincoat'],[/围巾/,'scarf'],[/种子/,'seed'],[/瓶/,'bottle']]
+function spriteGuess(name){
+  const label=String(name||'')
+  for(const [pattern,key] of SPRITE_RULES) if(pattern.test(label)) return key
+  return 'box'
+}
 let mapUrl, mapRequest
 function showMapImage(image){
  if(mapUrl){if(!image.hasAttribute('src'))image.src=mapUrl;return}
@@ -115,13 +234,13 @@ function draw(){
  else {const group=el('div','');group.className='choices';for(const action of activities[here]||['在附近走走'])group.append(control(action,'act',{action}));d.append(group)}
  if(inside){const home=el('div','');home.className='choices';home.append(control('做湖边工作','work',{jobId:'lake-helper'}));if(place.id==='fish-home'){const decorItems=(state.inventory||[]).filter(x=>x.decor||/灯|架|漆|盆栽|花瓶|长凳|围巾|台灯|邮票/.test(x.name||''));if(decorItems.length){home.append(el('strong','自由布置小屋'));for(const item of decorItems.slice(-6)){const row=el('div','');row.className='row';row.append(el('span',item.name));row.append(control('放到书桌','decorate',{item:item.id,room:'小书桌与日记本',x:35,y:45,rotation:0}));row.append(control('放到窗边','decorate',{item:item.id,room:'收藏瓶与窗边花盆',x:70,y:35,rotation:0}));home.append(row)}}}d.append(home)}
   const shop=state.shops?.find(s=>(s.locationId||s.id)===place.id)
- if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='row';const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside)row.append(control('购买','buy',{item:item.id}));d.append(row)}}
+ if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='goods-row';row.append(spriteEl(item.sprite||spriteGuess(item.name),30,30));const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside)row.append(control('购买','buy',{item:item.id}));d.append(row)}}
   if(inside){
-   const npcs=(state.npcs||[]).filter(n=>n.locationId===place.id); if(npcs.length){d.append(el('h3','正在这里的居民'));for(const npc of npcs){const row=el('div','');row.className='row';row.append(el('span',npc.name+' · '+npc.activity));row.append(control('聊几句','npc-talk',{npcId:npc.id,text:'在'+place.name+'见面'}));d.append(row)}}
+   const npcs=(state.npcs||[]).filter(n=>n.locationId===place.id); if(npcs.length){d.append(el('h3','正在这里的居民'));for(const npc of npcs){const row=el('div','');row.className='row';row.append(el('span',npc.name+' · '+npc.activity),affinityEl(npc.affinity),control('聊几句','npc-talk',{npcId:npc.id,text:'在'+place.name+'见面'}));d.append(row);if(inside){(state.inventory||[]).length&&d.append(giftBox(npc,place))}}}
    const suggest=button('看看此刻发生什么',async()=>{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'event-suggestion'})});const v=await r.json();$('notice').textContent=v.event?.title? v.event.title+'：'+v.event.text : '暂无新的生活建议'});suggest.disabled=busy;d.append(suggest)
   }
   if(place.id==='fish-home'&&(state.homeDecor||[]).length){d.append(el('h3','小屋已布置'));for(const item of state.homeDecor.slice(-8)){const label=state.showDecorDetails===false?item.name:`${item.name} · ${item.room||'小屋'} · ${item.x||50},${item.y||50} · ${item.rotation||0}°`;const row=el('div','');row.className='row';row.append(el('span',label));if(inside&&place.id==='fish-home'){row.append(control('左转','decorate',{item:item.instanceId||item.id,decorAction:'rotate',rotation:(Number(item.rotation)||0)-15}));row.append(control('移动到窗边','decorate',{item:item.instanceId||item.id,decorAction:'move',room:item.room,x:72,y:35,rotation:item.rotation||0}));row.append(control('收回','decorate',{item:item.instanceId||item.id,decorAction:'remove'}))}d.append(row)}}
-  if((state.inventory||[]).length){d.append(el('h3','随身物品'));for(const item of state.inventory.slice(-8)){const row=el('div','');row.className='row';row.append(el('span',item.name),inside&&place.id==='fish-home'?control('布置','decorate',{item:item.id}):el('small','已带在身上'));d.append(row)}}
+  if((state.inventory||[]).length){d.append(el('h3','随身物品'));for(const item of state.inventory.slice(-8)){const row=el('div','');row.className='goods-row';row.append(spriteEl(item.sprite||spriteGuess(item.name),26,26),el('span',item.name));if(inside&&place.id==='fish-home')row.append(control('布置','decorate',{item:item.id}));d.append(row)}}
 }
 // Each hotspot is anchored to the furniture illustrated in its own room.
 const objects=[
@@ -140,6 +259,17 @@ const objects=[
  [['公告牌',29,43],['纪念票',51,61],['海报架',75,53]],
  [['站台钟',66,32],['检票口',81,61],['候车椅',38,75]]
 ]
+function giftBox(npc,place){
+  const box=el('div');box.className='choices'
+  const items=(state.inventory||[]).slice(-3)
+  if(!items.length){box.append(el('small','背包里还没有可以送出的东西。'));return box}
+  box.append(el('small','送点什么给'+npc.name+'：'))
+  for(const item of items){
+    const b=button('赠送'+item.name,()=>run({kind:'npc-gift',id:place.id,npcId:npc.id,item:item.id}))
+    b.disabled=busy;box.append(b)
+  }
+  return box
+}
 function drawRoom(place,inside){
  const stage=$('stage'),panel=$('object-panel'),cell=cells[place.id]
  stage.replaceChildren();panel.replaceChildren();if(stage.dataset.scene!==place.id){stage.dataset.scene=place.id;stage.style.backgroundImage=Object.hasOwn(cells,place.id)?'url('+sceneRoot+place.id+'.webp)':'none'}
@@ -167,7 +297,7 @@ function drawRoom(place,inside){
  if(place.id!=='fish-home')return
  for(const item of state.homeDecor||[]){
    const id=item.instanceId||item.id
-   const n=button(/灯/.test(item.name)?'🏮':/花|盆/.test(item.name)?'🪴':/椅|凳/.test(item.name)?'🪑':/架|书/.test(item.name)?'📚':'📦',()=>{})
+   const n=button('',()=>{});n.append(spriteEl(item.sprite||spriteGuess(item.name)))
    n.title=item.name;n.setAttribute('aria-label',item.name);n.className='furniture';position(n,item.x??50,item.y??50)
    n.style.transform='translate(-50%,-50%) rotate('+(Number(item.rotation)||0)+'deg)'
    stage.append(n);if(!inside)continue
@@ -179,6 +309,6 @@ function drawRoom(place,inside){
    n.onpointercancel=()=>{start=null;dragging=false;draw()}
  }
 }
-async function run(payload){if(busy)return;busy=true;revision++;draw();try{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const v=await r.json();if(!r.ok)throw Error(v.error);state=v;$('notice').textContent='已记录'+({travel:'本次步行',buy:'本次购买',act:'本次活动',work:'工作',decorate:'房屋布置'}[payload.kind]||'操作')}catch(e){$('notice').textContent=e.message}finally{busy=false;draw()}}
+async function run(payload){if(busy)return;busy=true;revision++;draw();try{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const v=await r.json();if(!r.ok)throw Error(v.error);state=v;$('notice').textContent=v.noticeText||('已记录'+({travel:'本次步行',buy:'本次购买',act:'本次活动',work:'工作',decorate:'房屋布置','npc-talk':'聊天','npc-gift':'送礼'}[payload.kind]||'操作'))}catch(e){$('notice').textContent=e.message}finally{busy=false;draw()}}
 async function poll(){const version=revision;try{if(busy||dragging)return;const r=await fetch('/state');if(!r.ok)throw Error();const next=await r.json();if(version!==revision||dragging)return;if(JSON.stringify(next)!==JSON.stringify(state)){state=next;draw()}$('sync').textContent='● 已同步 '+new Date().toLocaleTimeString()}catch{$('sync').textContent='连接中断 · 正在重试'}finally{setTimeout(poll,Math.max(1,Number(window.TOWN_REFRESH_SECONDS||2))*1000)}}poll()
 </script></html>

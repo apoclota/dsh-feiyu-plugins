@@ -1,6 +1,6 @@
 import http from 'node:http'
 import { existsSync, readFileSync } from 'node:fs'
-import { status, act, buy, travel, enter, decorate, work, npcTalk, eventSuggestion } from './state.mjs'
+import { status, act, buy, travel, enter, decorate, work, npcTalk, npcGift, eventSuggestion } from './state.mjs'
 
 const port = Number(process.env.TOWN_PORT || 18763)
 const host = '127.0.0.1'
@@ -29,6 +29,13 @@ export function startDashboard(config = { stateFile: process.env.DSH_TOWN_LIFE_F
         res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'private, max-age=600' })
         return res.end(readFileSync(file))
       }
+      if (req.method === 'GET' && /^\/sprites\/[a-z0-9-]+\.(png|webp|svg)$/.test(req.url)) {
+        const file = new URL('.' + req.url, import.meta.url)
+        if (!existsSync(file)) return send(res, 404, {})
+        const ext = req.url.split('.').pop()
+        res.writeHead(200, { 'Content-Type': ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/svg+xml', 'Cache-Control': 'private, max-age=300' })
+        return res.end(readFileSync(file))
+      }
       if (req.method === 'GET' && req.url === '/oakbrook.webp') {
         res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'private, max-age=600' })
         return res.end(readFileSync(mapFile))
@@ -49,6 +56,7 @@ export function startDashboard(config = { stateFile: process.env.DSH_TOWN_LIFE_F
       if (kind === 'decorate') return send(res, 200, decorate(config, item, { room, x, y, rotation, action: decorAction }).state)
       if (kind === 'work') return send(res, 200, work(config, jobId).state)
       if (kind === 'npc-talk') return send(res, 200, npcTalk(config, npcId, text).state)
+      if (kind === 'npc-gift') { const gifted = npcGift(config, npcId, item); return send(res, 200, { ...gifted.state, noticeText: gifted.reaction }) }
       if (kind === 'event-suggestion') return send(res, 200, eventSuggestion(config))
       if (kind === 'act' && typeof action === 'string' && action.trim() && action.length <= 200)
         return send(res, 200, act(config, action).state)
