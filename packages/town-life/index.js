@@ -1,5 +1,5 @@
 import { dashboardUrl, startDashboard } from './lib/dashboard.mjs'
-import { npcGift, DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion } from './lib/state.mjs'
+import { npcGift, DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion, rest, eat, sell, plant, waterField, harvest, jobsAt, JOBS } from './lib/state.mjs'
 import { loadHostDeps } from './lib/hostdeps.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -26,7 +26,7 @@ const { z } = await loadHostDeps()
 const TOWN_OUTPUT = { schema: { type: 'object', additionalProperties: true }, render: (_args, value) => [{ type: 'text', text: typeof value === 'string' ? value : JSON.stringify(value, null, 2) }] }
 const defineTool = spec => ({ ...spec, output: spec.output || TOWN_OUTPUT })
 
-export const inject = ['tools']
+export const inject = ['tools', 'systemPrompt']
 let activeConfig = {}
 function summary() {
   try {
@@ -88,8 +88,35 @@ function configView() {
 function townSnapshot() {
   try {
     const s = status(plainConfig()).state
-    return { location: s.location?.name || '未进入地点', phase: s.currentPhase || '', coins: Number(s.wallet?.balance ?? s.coins ?? 0), energy: Number(s.energy ?? 0), mood: Number(s.mood ?? 0), locations: (s.locations || []).length, shops: (s.shops || []).length, npcs: (s.npcs || []).length, updatedAt: s.updatedAt || '' }
+    return { location: s.location?.name || '未进入地点', phase: s.currentPhase || '', coins: Number(s.wallet?.balance ?? s.coins ?? 0), energy: Number(s.energy ?? 0), mood: Number(s.mood ?? 0), locations: (s.locations || []).length, shops: (s.shops || []).length, npcs: (s.npcs || []).length, updatedAt: s.updatedAt || '', clock: s.clock?.local || '', fullness: s.fullness?.label || '', tone: s.tone?.voice || '', activity: s.activity ? (s.activity.label + ' · 还剩 ' + s.activity.remainMinutes + ' 分钟') : '', field: s.field ? (s.field.planted + ' / ' + s.field.plots.length + ' 块地有作物') : '' }
   } catch (error) { return { error: error.message } }
+}
+
+function townPromptLine() {
+  if (plainConfig().enabled === false) return ''
+  const s = status(plainConfig()).state
+  const tone = s.tone || {}
+  const parts = []
+  parts.push('【橡溪镇】' + (s.clock?.label || '') + ' ' + (s.clock?.local || '') + '，她在' + (s.location?.name || '镇上') + '。')
+  parts.push('精力 ' + Math.round(Number(s.energy ?? 0)) + '/100（' + (tone.energyLabel || '正常') + '），心情 ' + Math.round(Number(s.mood ?? 0)) + '，' + (s.fullness?.label ? '饱食感：' + s.fullness.label + '。' : ''))
+  if (s.activity) parts.push('她正在' + s.activity.label + '，还剩 ' + s.activity.remainMinutes + ' 分钟（这段时间也可以聊天，只是手上忙着）。')
+  const field = s.field
+  if (field && field.planted) {
+    const ready = field.plots.filter(p => p.ready).length
+    parts.push('小院 ' + field.planted + ' 块地有作物' + (ready ? '，其中 ' + ready + ' 块已经能收' : '') + '。')
+  }
+  parts.push('说话口气按这个来：' + (tone.voice || '正常') + '。' + (tone.hint || ''))
+  if (s.fullness?.hint) parts.push(s.fullness.hint)
+  return parts.join('')
+}
+function registerPrompt(ctx) {
+  try {
+    const sp = ctx.systemPrompt || (typeof ctx.get === 'function' ? ctx.get('systemPrompt') : null)
+    if (!sp || typeof sp.context !== 'function') return () => {}
+    const off = sp.context({ name: 'town-life-state', order: 930, text: () => { try { return townPromptLine() } catch (error) { return '' } } })
+    if (typeof off === 'function') return off
+    return () => off?.off?.()
+  } catch (error) { console.error('橡溪镇语气提示注入失败（不影响插件本身）', error && error.message); return () => {} }
 }
 function registerSettingsRoutes(ctx) {
   const readBody = req => new Promise(resolve => { let body = ''; req.on('data', chunk => { body += chunk; if (body.length > 65536) body = body.slice(0, 65536) }); req.on('end', () => { try { resolve(JSON.parse(body || '{}')) } catch { resolve({}) } }); req.on('error', () => resolve({})) })
@@ -128,18 +155,26 @@ export function apply(ctx, config = {}) {
   try { stopDashboard = startDashboard(config) } catch (error) { console.error('橡溪镇地图启动失败（不影响插件本身）', error && error.message) }
   const off = [stopDashboard]
   const reg = (spec, execute) => off.push(ctx.tools.register(defineTool({ ...spec, execute })))
-  reg({ name: 'town_life_status', description: '读取橡溪镇小鱼当前生活阶段、心情、任务和最近事件。只读。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => status(config))
+  reg({ name: 'town_life_status', description: '读取橡溪镇小鱼的当前状态：地点、精力、心情、饱食度、镇币、正在做的事、能干的活和小院田地；返回里的 tone.hint 说明她此刻说话该是什么口气（精力越低越短、越疲），请照此调整语气。只读。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => status(config))
   reg({ name: 'town_life_event', description: '推进一次生活线事件；daily 按当天选择每日或偶然事件，surprise 选择突发事件。', parameters: { type: 'object', properties: { kind: { type: 'string', enum: ['daily', 'surprise'], default: 'daily' } }, additionalProperties: false } }, async ({ kind = 'daily' }) => event(config, kind === 'surprise' ? 'surprise' : 'tick'))
   reg({ name: 'town_life_act', description: '记录主人或小渊选择的自由行动，并结束当前事件。', parameters: { type: 'object', required: ['action'], properties: { action: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false } }, async ({ action }) => act(config, action))
   reg({ name: 'town_life_enter', description: '进入或入住小镇地点；进入水边小屋后可布置、休息和工作。', parameters: { type: 'object', required: ['locationId'], properties: { locationId: { type: 'string' } }, additionalProperties: false } }, async ({ locationId }) => enter(config, locationId))
-  reg({ name: 'town_life_travel', description: '在小镇地点之间移动；walk 会按现实步行耗时推进，transit 使用交通耗时。', parameters: { type: 'object', required: ['locationId'], properties: { locationId: { type: 'string' }, mode: { type: 'string', enum: ['walk', 'transit'], default: 'walk' } }, additionalProperties: false } }, async ({ locationId, mode = 'walk' }) => travel(config, locationId, mode))
+  reg({ name: 'town_life_travel', description: '在小镇地点之间移动；walk 按步行耗时、transit 按交通耗时推进，路上会消耗精力。', parameters: { type: 'object', required: ['locationId'], properties: { locationId: { type: 'string' }, mode: { type: 'string', enum: ['walk', 'transit'], default: 'walk' } }, additionalProperties: false } }, async ({ locationId, mode = 'walk' }) => travel(config, locationId, mode))
   reg({ name: 'town_life_shop', description: '在现实对应的小镇商店购买物品，自动扣除小镇币并写入库存。', parameters: { type: 'object', required: ['shopId', 'itemId'], properties: { shopId: { type: 'string' }, itemId: { type: 'string' }, quantity: { type: 'integer', minimum: 1, maximum: 10, default: 1 } }, additionalProperties: false } }, async ({ shopId, itemId, quantity = 1 }) => buy(config, shopId, itemId, quantity))
   reg({ name: 'town_life_decorate', description: '把已购买物品布置进月镜湖芦苇湾水边小屋并持久化房屋状态。', parameters: { type: 'object', required: ['itemId'], properties: { itemId: { type: 'string' } }, additionalProperties: false } }, async ({ itemId }) => decorate(config, itemId))
-  reg({ name: 'town_life_work', description: '在小镇做一份安全的生活工作，获得小镇币并消耗精力。', parameters: { type: 'object', properties: { jobId: { type: 'string', enum: ['lake-helper', 'shop-helper', 'diary-copyist'], default: 'lake-helper' } }, additionalProperties: false } }, async ({ jobId = 'lake-helper' }) => work(config, jobId))
+  reg({ name: 'town_life_jobs', description: '列出当前地点能干的活：报酬、耗时（游戏分钟）、要花的精力，以及现在为什么不能干。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => { const snapshot = status(config); return { ok: true, mode: 'jobs', location: snapshot.state.location, jobs: snapshot.state.jobs, tone: snapshot.state.tone } })
+  reg({ name: 'town_life_work', description: '在当前地点接一份活开始干：会占用一段游戏时间（10–25 分钟），结束时结算镇币、扣精力；干活期间仍可以聊天，只是她手上忙着。精力不够会直接拒绝。', parameters: { type: 'object', properties: { jobId: { type: 'string' } }, additionalProperties: false } }, async ({ jobId }) => work(config, jobId))
+  reg({ name: 'town_life_rest', description: '休息：mode=nap 在小屋或长椅上歇一会儿（按舒适度回精力，占一段时间）；mode=sleep 睡到第二天早上，精力回满。', parameters: { type: 'object', properties: { mode: { type: 'string', enum: ['nap', 'sleep'], default: 'nap' } }, additionalProperties: false } }, async ({ mode = 'nap' }) => rest(config, mode))
+  reg({ name: 'town_life_eat', description: '吃掉背包里的一样食物：恢复精力、抬高心情、消掉饥饿提示，并推进一点游戏时间。', parameters: { type: 'object', required: ['itemId'], properties: { itemId: { type: 'string' } }, additionalProperties: false } }, async ({ itemId }) => eat(config, itemId))
+  reg({ name: 'town_life_sell', description: '把背包里的一件东西卖回商店：普通物品半价，家具六折。', parameters: { type: 'object', required: ['itemId'], properties: { itemId: { type: 'string' } }, additionalProperties: false } }, async ({ itemId }) => sell(config, itemId))
+  reg({ name: 'town_life_plant', description: '在小屋小院里种下一包种子（种子在花店、杂货店、药房买）。生长按游戏时间，浇水会加快。', parameters: { type: 'object', required: ['seedId'], properties: { seedId: { type: 'string' }, plotIndex: { type: 'integer', minimum: 0, maximum: 2 } }, additionalProperties: false } }, async ({ seedId, plotIndex }) => plant(config, seedId, plotIndex))
+  reg({ name: 'town_life_water', description: '给小院的作物浇水（一次浇全部，耗 3 点精力、3 分钟）。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => waterField(config))
+  reg({ name: 'town_life_harvest', description: '收一块成熟的田：作物进背包，可以卖钱、吃或送人。', parameters: { type: 'object', required: ['plotIndex'], properties: { plotIndex: { type: 'integer', minimum: 0, maximum: 2 } }, additionalProperties: false } }, async ({ plotIndex }) => harvest(config, plotIndex))
   reg({ name: 'town_life_npc_talk', description: '与当前小镇 NPC 互动并记录关系变化。', parameters: { type: 'object', required: ['npcId'], properties: { npcId: { type: 'string' }, text: { type: 'string', maxLength: 200 } }, additionalProperties: false } }, async ({ npcId, text = '' }) => npcTalk(config, npcId, text))
   reg({ name: 'town_life_npc_gift', description: '把背包里的一件东西送给小镇居民，按喜好提升好感度并返回对方反应。', parameters: { type: 'object', required: ['npcId', 'itemId'], properties: { npcId: { type: 'string' }, itemId: { type: 'string' } }, additionalProperties: false } }, async ({ npcId, itemId }) => npcGift(config, npcId, itemId))
   reg({ name: 'town_life_event_suggestion', description: '根据现实时间、天气和地点给出一条正在流动的生活事件建议。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => eventSuggestion(config))
   reg({ name: 'town_life_weather', description: '读取成都城市级天气状态；未接入真实天气服务时会明确标注占位。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => weather(config))
+  try { off.push(registerPrompt(ctx)) } catch (error) { console.error('橡溪镇语气提示注入失败（不影响插件本身）', error && error.message) }
   try { registerSettingsRoutes(ctx) } catch (error) { console.error('橡溪镇设置接口注册失败（不影响插件本身）', error && error.message) }
   return () => off.forEach(fn => { try { fn?.() } catch {} })
 }

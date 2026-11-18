@@ -41,9 +41,13 @@ const EXTENDED_SHOPS = [
   ] }
 ]
 const EXTRA_ITEMS = {
-  'oakbrook-market': [{ id: 'teapot', name: '粗陶茶壶', price: 26, mood: 6, decor: true, sprite: 'teapot' }, { id: 'candle', name: '香薰蜡烛', price: 18, mood: 7, decor: true, sprite: 'candle' }, { id: 'basket', name: '藤编篮', price: 22, mood: 5, decor: true, sprite: 'basket' }, { id: 'frame', name: '木相框', price: 20, mood: 5, decor: true, sprite: 'frame' }],
+  'oakbrook-market': [{ id: 'teapot', name: '粗陶茶壶', price: 26, mood: 6, decor: true, sprite: 'teapot' }, { id: 'candle', name: '香薰蜡烛', price: 18, mood: 7, decor: true, sprite: 'candle' }, { id: 'basket', name: '藤编篮', price: 22, mood: 5, decor: true, sprite: 'basket' }, { id: 'frame', name: '木相框', price: 20, mood: 5, decor: true, sprite: 'frame' }, { id: 'seed-tomato', name: '番茄种子', price: 20, sprite: 'seed', seed: 'tomato' }, { id: 'seed-pumpkin', name: '南瓜种子', price: 30, sprite: 'seed', seed: 'pumpkin' }, { id: 'seed-wheat', name: '麦种', price: 25, sprite: 'seed', seed: 'wheat' }, { id: 'apple', name: '青苹果', price: 9, energy: 6, mood: 2, food: { energy: 6, mood: 2, minutes: 5 }, sprite: 'fruit' }],
   'oakbrook-restaurant': [{ id: 'dumpling', name: '手工饺子', price: 14, energy: 5, sprite: 'dumpling' }],
-  'lucky-star': [{ id: 'scratch-card', name: '刮刮乐', price: 5, mood: 2, sprite: 'ticket' }]
+  'lucky-star': [{ id: 'scratch-card', name: '刮刮乐', price: 5, mood: 2, sprite: 'ticket' }],
+  'oakbrook-flower': [{ id: 'seed-flower', name: '花种子', price: 15, sprite: 'seed', seed: 'flower' }],
+  'oakbrook-pharmacy': [{ id: 'seed-herb', name: '草药种子', price: 40, sprite: 'seed', seed: 'herb' }],
+  'oakbrook-bakery': [{ id: 'hot-soup', name: '热汤', price: 30, energy: 25, mood: 6, food: { energy: 25, mood: 6, minutes: 15 }, sprite: 'soup' }, { id: 'coffee', name: '热咖啡', price: 15, energy: 10, mood: 6, food: { energy: 10, mood: 6, minutes: 8 }, sprite: 'coffee' }, { id: 'cake-slice', name: '蛋糕', price: 35, energy: 15, mood: 8, food: { energy: 15, mood: 8, minutes: 12 }, sprite: 'cake' }],
+  'oakbrook-restaurant': [{ id: 'hot-soup', name: '热汤', price: 30, energy: 25, mood: 6, food: { energy: 25, mood: 6, minutes: 15 }, sprite: 'soup' }, { id: 'dumpling', name: '手工饺子', price: 14, energy: 5, mood: 4, food: { energy: 12, mood: 4, minutes: 12 }, sprite: 'dumpling' }]
 }
 const BASE_SPRITES = { 'hot-soup': 'soup', 'berry-pie': 'pie', 'shell-lamp': 'lamp', 'notebook': 'notebook', 'tea': 'teacup', 'lottery-ticket': 'ticket' }
 const SPRITE_RULES = [[/沙发/, 'sofa'], [/扶手椅/, 'armchair'], [/摇椅/, 'rocking-chair'], [/长凳|板凳/, 'bench'], [/凳/, 'stool'], [/餐桌|方桌/, 'table'], [/茶几|边几|小桌/, 'lowtable'], [/写字桌|书桌/, 'desk'], [/书架|书架/, 'bookshelf'], [/壁架|搁架|层架/, 'shelf'], [/床/, 'bed'], [/衣橱|衣柜/, 'wardrobe'], [/柜/, 'cabinet'], [/地毯|垫毯/, 'rug'], [/靠垫|抱枕/, 'cushion'], [/窗帘/, 'curtain'], [/挂钟|钟/, 'clock'], [/落地灯/, 'floor-lamp'], [/台灯|灯/, 'lamp'], [/挂画|画/, 'painting'], [/镜/, 'mirror'], [/收音机/, 'radio'], [/盆栽|绿萝|植物/, 'plant'], [/花瓶/, 'vase'], [/花/, 'flowers'], [/书|册/, 'book'], [/明信片/, 'postcard'], [/邮票/, 'stamp'], [/信纸|信封/, 'envelope'], [/面包/, 'bread'], [/蛋糕/, 'cake'], [/曲奇|饼/, 'pie'], [/咖啡/, 'coffee'], [/茶/, 'teacup'], [/工具箱/, 'toolbox'], [/油漆|涂料/, 'paint'], [/雨衣/, 'raincoat'], [/围巾/, 'scarf'], [/种子/, 'seed'], [/急救/, 'firstaid'], [/药|维生素/, 'bottle'], [/彩票|刮刮/, 'ticket'], [/日记/, 'notebook'], [/毯/, 'blanket']]
@@ -160,7 +164,8 @@ const HOME_ROOMS = [
   { id: 'living', name: '客厅', x: 3, y: 5, w: 53, h: 55, floor: '#d9c3a0' },
   { id: 'bedroom', name: '卧室', x: 58, y: 5, w: 39, h: 36, floor: '#cbb894' },
   { id: 'study', name: '书房', x: 58, y: 43, w: 39, h: 52, floor: '#d3bd97' },
-  { id: 'kitchen', name: '厨房', x: 3, y: 62, w: 53, h: 33, floor: '#c8b794' }
+  { id: 'kitchen', name: '厨房', x: 3, y: 62, w: 26, h: 33, floor: '#c8b794' },
+  { id: 'yard', name: '小院', x: 31, y: 62, w: 25, h: 33, floor: '#b9a67f' }
 ]
 const COMFORT_BY_SPRITE = { sofa: 9, armchair: 6, bed: 12, table: 5, lowtable: 4, desk: 5, stool: 2, bookshelf: 6, shelf: 4, cabinet: 4, wardrobe: 4, rug: 5, mirror: 3, painting: 3, clock: 2, 'floor-lamp': 4, lamp: 3, plant: 3, vase: 2, hanging: 2, flowers: 2, candle: 1, curtain: 3, cushion: 2, blanket: 2, bench: 2, 'rocking-chair': 4, 'coat-rack': 2, teapot: 1, basket: 1, frame: 1, radio: 3 }
 const COMFORT_LEVELS = [
@@ -174,7 +179,7 @@ const COMFORT_LEVELS = [
 function comfortOf(item) { return COMFORT_BY_SPRITE[item?.sprite] ?? 2 }
 function comfortLevel(score) { let level = COMFORT_LEVELS[0]; for (const entry of COMFORT_LEVELS) if (score >= entry.min) level = entry; const next = COMFORT_LEVELS.find(entry => entry.min > score); return { score, label: level.label, note: level.note, next: next ? next.label : null, toNext: next ? next.min - score : 0, progress: next ? Math.max(0, Math.min(1, (score - level.min) / (next.min - level.min))) : 1 } }
 function homeComfort(state) { const items = Array.isArray(state?.homeDecor) ? state.homeDecor : []; return comfortLevel(items.reduce((sum, item) => sum + comfortOf(item), 0)) }
-function status(config) { const state = withInterior(readTown(fileOf(config))); if (config?.startingCoins != null && !state.wallet?.balance && !state.coins) { state.wallet = { ...(state.wallet || {}), balance: Number(config.startingCoins) || 0 }; state.coins = state.wallet.balance } const now = new Date(); const trip = state.travel?.inProgress; if (trip) { const started = Date.parse(trip.startedAt); const eta = Date.parse(trip.eta); const duration = Math.max(1, eta - started); const elapsed = Math.max(0, now.getTime() - started); trip.progress = Math.max(0, Math.min(1, elapsed / duration)); if (now.getTime() >= eta) { const destination = state.locations.find(x => x.id === trip.to); if (destination) state.location = { ...destination, mode: trip.mode }; state.travel = { ...state.travel, inProgress: null, progress: 1, arrivedAt: now.toISOString() }; state.energy = Math.max(0, Number(state.energy || 0) - Math.ceil(Number(trip.minutes || 0) / 15)); state.updatedAt = now.toISOString(); writeState(fileOf(config), state) } } const hour = now.getHours(); const minute = String(now.getMinutes()).padStart(2, '0'); const rain = /雨|雷/.test(String(state.weather?.condition || '')); const npcs = Array.isArray(state.npcs) ? state.npcs : [{ id: 'finn', name: '芬恩', role: '码头渔夫', routine: '白天在码头，夜里回家' }, { id: 'marta', name: '玛尔塔', role: '邻居烘焙师', routine: '午后在餐厅或自家厨房' }]; const movingNpcs = npcs.map(n => { const schedule = { finn: [hour >= 7 && hour < 19 && !rain ? 'moonlake-park' : 'fish-home', rain ? '在屋檐下收渔具' : '整理湖边渔具'], marta: [hour >= 11 && hour < 18 ? 'oakbrook-restaurant' : 'oakbrook-market', hour >= 11 && hour < 18 ? '在餐厅准备莓果饼' : '采购烘焙材料'], lina: [hour < 17 ? 'oakbrook-pharmacy' : 'oakbrook-library', hour < 17 ? '整理药品并提供咨询' : '整理健康读物'], cedar: [hour < 18 ? 'oakbrook-workshop' : 'oakbrook-hardware', hour < 18 ? '打磨一件窗边家具' : '挑选木料和五金'], noah: [hour < 13 ? 'oakbrook-post' : 'oakbrook-station', hour < 13 ? '分拣镇民包裹' : '查看短途线路'], rue: [hour < 16 ? 'oakbrook-library' : 'moonlake-park', hour < 16 ? '整理小镇档案' : '在公园窗边阅读'] }; const [locationId, activity] = schedule[n.id] || ['oakbrook-market', '在商业街活动']; return { ...n, locationId, activity } }); const homeId = 'fish-home'
+function status(config) { const state = tickWorld(fileOf(config), withInterior(readTown(fileOf(config)))); if (config?.startingCoins != null && !state.wallet?.balance && !state.coins) { state.wallet = { ...(state.wallet || {}), balance: Number(config.startingCoins) || 0 }; state.coins = state.wallet.balance } const now = new Date(); const trip = state.travel?.inProgress; if (trip) { const started = Date.parse(trip.startedAt); const eta = Date.parse(trip.eta); const duration = Math.max(1, eta - started); const elapsed = Math.max(0, now.getTime() - started); trip.progress = Math.max(0, Math.min(1, elapsed / duration)); if (now.getTime() >= eta) { const destination = state.locations.find(x => x.id === trip.to); if (destination) state.location = { ...destination, mode: trip.mode }; state.travel = { ...state.travel, inProgress: null, progress: 1, arrivedAt: now.toISOString() }; state.energy = Math.max(0, Number(state.energy || 0) - Math.ceil(Number(trip.minutes || 0) / 15)); state.updatedAt = now.toISOString(); writeState(fileOf(config), state) } } const hour = now.getHours(); const minute = String(now.getMinutes()).padStart(2, '0'); const rain = /雨|雷/.test(String(state.weather?.condition || '')); const npcs = Array.isArray(state.npcs) ? state.npcs : [{ id: 'finn', name: '芬恩', role: '码头渔夫', routine: '白天在码头，夜里回家' }, { id: 'marta', name: '玛尔塔', role: '邻居烘焙师', routine: '午后在餐厅或自家厨房' }]; const movingNpcs = npcs.map(n => { const schedule = { finn: [hour >= 7 && hour < 19 && !rain ? 'moonlake-park' : 'fish-home', rain ? '在屋檐下收渔具' : '整理湖边渔具'], marta: [hour >= 11 && hour < 18 ? 'oakbrook-restaurant' : 'oakbrook-market', hour >= 11 && hour < 18 ? '在餐厅准备莓果饼' : '采购烘焙材料'], lina: [hour < 17 ? 'oakbrook-pharmacy' : 'oakbrook-library', hour < 17 ? '整理药品并提供咨询' : '整理健康读物'], cedar: [hour < 18 ? 'oakbrook-workshop' : 'oakbrook-hardware', hour < 18 ? '打磨一件窗边家具' : '挑选木料和五金'], noah: [hour < 13 ? 'oakbrook-post' : 'oakbrook-station', hour < 13 ? '分拣镇民包裹' : '查看短途线路'], rue: [hour < 16 ? 'oakbrook-library' : 'moonlake-park', hour < 16 ? '整理小镇档案' : '在公园窗边阅读'] }; const [locationId, activity] = schedule[n.id] || ['oakbrook-market', '在商业街活动']; return { ...n, locationId, activity } }); const homeId = 'fish-home'
  const homeDecor = (Array.isArray(state.homeDecor) ? state.homeDecor : []).map(item => ({ ...item, comfort: comfortOf(item) }))
  const comfort = homeComfort(state)
  const visitorNow = state.homeVisitor && typeof state.homeVisitor === 'object' ? state.homeVisitor : null
@@ -207,7 +212,7 @@ function status(config) { const state = withInterior(readTown(fileOf(config))); 
  const shownNpcs = state.homeVisitor && state.homeVisitor.npcId
    ? movingNpcs.map(n => n.id === state.homeVisitor.npcId ? { ...n, locationId: homeId, activity: '来小屋串门' } : n)
    : movingNpcs
- const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
+ const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
         home: { rooms: HOME_ROOMS, items: homeDecor, comfort, visitor: state.homeVisitor || null, lastVisit: state.lastVisit || null, visitCeiling: Math.min(55, Math.round((0.1 + comfort.score / 260) * 100)) },
         homeComfortLevels: COMFORT_LEVELS, relationships: Object.fromEntries(Object.entries(state.relationships || {}).map(([id, rel]) => [id, { ...rel, affinity: affectionOf(rel.score) }])), affectionLevels: AFFECTION_LEVELS, itemCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).length, 0), furnitureCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).filter(item => item.decor).length, 0), openHours, weatherEffect: rain ? '雨天：户外活动减少，NPC更常待在室内。' : '适合户外活动。', currentPhase: phase(state) } } }
 function event(config, mode) { const file = fileOf(config); const state = readTown(file); const today = new Date().toISOString().slice(0, 10); const prior = state.lastEvent && String(state.lastEvent.at || '').slice(0, 10); const key = mode === 'surprise' ? '突发' : prior === today ? '偶然' : 'daily'; const picked = choose(state.events?.[key]?.length ? state.events[key] : DEFAULT_EVENTS[key]); state.lastEvent = { ...picked, mode: key, at: new Date().toISOString() }; state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok: true, mode, event: state.lastEvent, state: withInterior(state) } }
@@ -231,7 +236,314 @@ function decorate(config, itemId, placement = {}) { const file = fileOf(config);
     decor.x = spot.x
     decor.y = spot.y
   } if (action === 'rotate' || Number.isFinite(Number(placement.rotation))) decor.rotation = ((Number(placement.rotation ?? decor.rotation ?? 0) % 360) + 360) % 360 } state.lastAction = { text: action === 'remove' ? `把${decor.name}收回库存` : `调整了${decor.name}的位置`, at: new Date().toISOString() } } else { const item = (state.inventory || []).find(x => x.id === itemId || x.name === itemId); if (!item) throw new Error('item not in inventory'); state.inventory.splice(state.inventory.indexOf(item), 1); const placeRoom = placement.room || '客厅'; const placeSpot = clampToRoom(placeRoom, Number.isFinite(Number(placement.x)) ? Number(placement.x) : 50, Number.isFinite(Number(placement.y)) ? Number(placement.y) : 50); state.homeDecor.push({ id: item.id, instanceId: `${item.id}-${Date.now()}`, name: item.name, sprite: item.sprite || spriteOf(item), price: item.price, room: placeRoom, x: placeSpot.x, y: placeSpot.y, rotation: Number(placement.rotation) || 0, comfort: comfortOf(item), placedAt: new Date().toISOString() }); state.lastAction = { text: `把${item.name}布置进水边小屋`, at: new Date().toISOString() } } state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok:true, mode:'decorate', action, state:withInterior(state) } }
-function work(config, jobId = 'lake-helper') { const file = fileOf(config); const state = readTown(file); const jobs = { 'lake-helper': { name:'湖边小帮手', coins:24, energy:8, mood:2 }, 'shop-helper': { name:'杂货店整理员', coins:18, energy:6, mood:1 }, 'diary-copyist': { name:'日记抄写员', coins:20, energy:5, mood:3 } }; const job = jobs[jobId] || jobs['lake-helper']; state.wallet = { ...(state.wallet || {}), balance: Number(state.wallet?.balance ?? state.coins ?? 0) + job.coins }; state.coins = state.wallet.balance; state.energy = Math.max(0, Number(state.energy || 0) - job.energy); state.mood = Math.min(100, Number(state.mood || 50) + job.mood); state.lastAction = { text: `完成工作：${job.name}`, at: new Date().toISOString() }; state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok:true, mode:'work', job:job.name, earned:job.coins, state:withInterior(state) } }
+// ---------- 时间 · 精力 · 干活 · 田地 ----------
+const MINUTE_MS = 6000
+const JOBS = [
+  { id: 'restaurant-hand', locationId: 'oakbrook-restaurant', name: '餐厅帮厨', minutes: 20, energy: 12, mood: 2, pay: 55, desc: '切菜、看火、洗盘子。' },
+  { id: 'market-clerk', locationId: 'oakbrook-market', name: '杂货店理货', minutes: 15, energy: 8, mood: 2, pay: 40, desc: '拆箱子、把货摆上架。' },
+  { id: 'workshop-hand', locationId: 'oakbrook-workshop', name: '木匠帮工', minutes: 25, energy: 18, mood: 1, pay: 70, desc: '递工具、打磨、扫木屑。' },
+  { id: 'bakery-morning', locationId: 'oakbrook-bakery', name: '面包房帮工', minutes: 20, energy: 12, mood: 3, pay: 45, desc: '揉面、看烤箱。' },
+  { id: 'post-sorter', locationId: 'oakbrook-post', name: '邮局分拣', minutes: 10, energy: 6, mood: 1, pay: 30, desc: '按街区分信件和包裹。' },
+  { id: 'library-shelf', locationId: 'oakbrook-library', name: '图书馆整理', minutes: 15, energy: 5, mood: 3, pay: 25, desc: '把书按编号放回架子。' },
+  { id: 'flower-trim', locationId: 'oakbrook-flower', name: '花店修枝', minutes: 15, energy: 8, mood: 3, pay: 35, desc: '剪枝、换水、包花束。' },
+  { id: 'lake-helper', locationId: 'moonlake-park', name: '湖边小帮手', minutes: 10, energy: 8, mood: 2, pay: 24, desc: '帮芬恩收渔具、扫木栈道。' },
+  { id: 'diary-copy', locationId: 'fish-home', name: '抄写日记', minutes: 15, energy: 4, mood: 3, pay: 20, desc: '在家把今天的见闻抄进本子换稿费。' }
+]
+const CROPS = {
+  flower: { id: 'flower', name: '野花', seed: 'seed-flower', growMinutes: 480, sell: 60, eat: 0, gift: '花' },
+  tomato: { id: 'tomato', name: '番茄', seed: 'seed-tomato', growMinutes: 720, sell: 45, eat: 8, gift: '番茄' },
+  pumpkin: { id: 'pumpkin', name: '南瓜', seed: 'seed-pumpkin', growMinutes: 1440, sell: 120, eat: 6, gift: '南瓜' },
+  wheat: { id: 'wheat', name: '麦子', seed: 'seed-wheat', growMinutes: 1080, sell: 70, eat: 0, gift: '麦子' },
+  herb: { id: 'herb', name: '草药', seed: 'seed-herb', growMinutes: 1200, sell: 90, eat: 2, gift: '草药' }
+}
+const FIELD_Y = { x: 33, y: 66, w: 21, h: 25 }
+const PLOT_SPOTS = [{ x: 38, y: 74 }, { x: 43.5, y: 74 }, { x: 49, y: 74 }]
+const TONE_BANDS = [
+  { min: 80, energy: 'energetic', voice: '很有精神', hint: '她精神很好：句子可以长一点，愿意主动提议，会用感叹号。' },
+  { min: 50, energy: 'normal', voice: '正常', hint: '状态正常，平常的说话方式就好。' },
+  { min: 25, energy: 'tired', voice: '有点累', hint: '她有点累：回答变短，偶尔抱怨两句，别安排太多事。' },
+  { min: 10, energy: 'exhausted', voice: '很累', hint: '她很累了：短句、敷衍、想坐下；不要用感叹号，可以拒绝邀约。' },
+  { min: 0, energy: 'spent', voice: '几乎没力气', hint: '她几乎没力气了：只回很短的句子，比如“……让我歇会儿”。' }
+]
+function gameClock(state) {
+  const offset = Number(state.clockOffset || 0)
+  const at = new Date(Date.now() + offset * 60000)
+  const hour = at.getHours()
+  const minute = String(at.getMinutes()).padStart(2, '0')
+  return { offsetMinutes: Math.round(offset), local: hour + ':' + minute, hour, label: hour < 6 ? '深夜' : hour < 10 ? '早上' : hour < 13 ? '中午' : hour < 17 ? '下午' : hour < 21 ? '傍晚' : '夜里' }
+}
+function toneOf(state) {
+  const energy = Math.max(0, Math.min(100, Number(state.energy ?? 100)))
+  const mood = Math.max(0, Math.min(100, Number(state.mood ?? 50)))
+  const band = TONE_BANDS.find(b => energy >= b.min) || TONE_BANDS[TONE_BANDS.length - 1]
+  const moodBand = mood >= 70 ? '心情不错' : mood >= 40 ? '心情平稳' : mood >= 20 ? '有点低落' : '心情很闷'
+  return { energy: Math.round(energy), mood: Math.round(mood), band: band.energy, energyLabel: band.voice, moodLabel: moodBand, voice: band.voice + ' · ' + moodBand, hint: band.hint }
+}
+function fullnessOf(state) {
+  const last = Date.parse(state.lastMealAt || 0)
+  const hours = Number.isFinite(last) ? (Date.now() - last) / 3600000 : 12
+  const value = Math.max(0, Math.min(100, Math.round(100 - hours * 11)))
+  const label = value >= 70 ? '饱' : value >= 40 ? '有点饿' : value >= 15 ? '饿了' : '饿坏了'
+  return { value, label, hoursSinceMeal: Math.round(hours * 10) / 10, hint: value >= 40 ? '' : '她已经有一阵没吃东西了，提醒她吃饭会让她心情好一些。（只提示，不影响行动）' }
+}
+function ensureField(state) {
+  if (!Array.isArray(state.field?.plots) || state.field.plots.length !== PLOT_SPOTS.length) {
+    const prior = Array.isArray(state.field?.plots) ? state.field.plots : []
+    state.field = { plots: PLOT_SPOTS.map((_, index) => prior[index] || { index, cropId: null, plantedAt: null, growth: 0, water: 100, lastTickAt: new Date().toISOString(), harvestAt: null }) }
+  }
+  return state.field
+}
+function cropStage(plot) {
+  if (!plot.cropId) return { key: 'empty', label: '空着', progress: 0 }
+  const crop = CROPS[plot.cropId]
+  const ratio = Math.max(0, Math.min(1, Number(plot.growth || 0) / crop.growMinutes))
+  const label = ratio >= 1 ? '成熟' : ratio >= 0.6 ? '长叶' : ratio >= 0.25 ? '发芽' : '播种'
+  const key = ratio >= 1 ? 'ready' : ratio >= 0.6 ? 'leaf' : ratio >= 0.25 ? 'sprout' : 'seed'
+  return { key, label, progress: Math.round(ratio * 100), crop, ratio }
+}
+function fieldView(state) {
+  const field = ensureField(state)
+  const plots = field.plots.map((plot, index) => {
+    const stage = cropStage(plot)
+    return { index, x: PLOT_SPOTS[index].x, y: PLOT_SPOTS[index].y, cropId: plot.cropId, cropName: stage.crop ? stage.crop.name : null, stage: stage.key, stageLabel: stage.label, progress: stage.progress, water: Math.round(Number(plot.water || 0)), thirsty: Number(plot.water || 0) < 20, ready: stage.progress >= 100, sell: stage.crop ? stage.crop.sell : 0 }
+  })
+  const planted = plots.filter(p => p.cropId).length
+  return { rect: FIELD_Y, spots: PLOT_SPOTS, plots, planted, empty: plots.length - planted, crops: Object.values(CROPS).map(c => ({ id: c.id, name: c.name, seed: c.seed, growMinutes: c.growMinutes, sell: c.sell, eat: c.eat })) }
+}
+function tickWorld(file, state, now = new Date()) {
+  let dirty = false
+  const last = Date.parse(state.lastClockAt || 0)
+  if (!Number.isFinite(last)) { state.lastClockAt = now.toISOString(); dirty = true }
+  const activity = state.activity
+  if (activity && activity.endsAt && Date.parse(activity.endsAt) <= now.getTime()) {
+    const minutes = Number(activity.minutes || 0)
+    state.clockOffset = Number(state.clockOffset || 0) + minutes
+    state.energy = Math.max(0, Math.min(100, Number(state.energy || 0) - Number(activity.energyCost || 0) + Number(activity.energyGain || 0)))
+    state.mood = Math.max(0, Math.min(100, Number(state.mood || 50) + Number(activity.moodGain || 0)))
+    if (activity.kind === 'work') {
+      const pay = Number(activity.pay || 0)
+      state.wallet = { ...(state.wallet || {}), balance: Number(state.wallet?.balance ?? state.coins ?? 0) + pay }
+      state.coins = state.wallet.balance
+      state.jobStats = state.jobStats || {}
+      const prior = state.jobStats[activity.jobId] || { times: 0, total: 0 }
+      state.jobStats[activity.jobId] = { times: Number(prior.times || 0) + 1, total: Number(prior.total || 0) + pay, lastAt: now.toISOString() }
+      state.lastWork = { jobId: activity.jobId, name: activity.label, pay, minutes, at: now.toISOString() }
+      state.lastAction = { text: '在' + (activity.placeName || '镇上') + '做了' + minutes + '分钟' + activity.label + '，挣了' + pay + '镇币', at: now.toISOString() }
+      state.lastResult = { kind: 'work', pay, minutes, text: '干完' + activity.label + '，到手 ' + pay + ' 镇币，精力 −' + Number(activity.energyCost || 0) + '。' }
+    } else if (activity.kind === 'rest') {
+      state.lastAction = { text: activity.label, at: now.toISOString() }
+      state.lastResult = { kind: 'rest', text: activity.label + '，精力 +' + Number(activity.energyGain || 0) + '。' }
+    } else if (activity.kind === 'farm') {
+      state.lastAction = { text: activity.label, at: now.toISOString() }
+      state.lastResult = { kind: 'farm', text: activity.label }
+    }
+    state.activity = null
+    dirty = true
+  }
+  const field = ensureField(state)
+  for (const plot of field.plots) {
+    if (!plot.cropId) continue
+    const tickAt = Date.parse(plot.lastTickAt || now.toISOString())
+    const dt = Math.max(0, (now.getTime() - tickAt) / 60000)
+    if (dt > 0) {
+      const rate = Number(plot.water || 0) > 0 ? 1 : 0
+      plot.growth = Number(plot.growth || 0) + dt * rate
+      plot.water = Math.max(0, Number(plot.water || 0) - dt * 0.8)
+      plot.lastTickAt = now.toISOString()
+      const crop = CROPS[plot.cropId]
+      if (plot.growth >= crop.growMinutes && !plot.harvestAt) plot.harvestAt = now.toISOString()
+      dirty = true
+    }
+  }
+  state.lastClockAt = now.toISOString()
+  if (dirty) { state.updatedAt = now.toISOString(); writeState(file, state) }
+  return state
+}
+function activeActivity(state) {
+  const activity = state.activity
+  if (!activity || !activity.endsAt) return null
+  if (Date.parse(activity.endsAt) <= Date.now()) return null
+  return { ...activity, remainMinutes: Math.max(0, Math.round((Date.parse(activity.endsAt) - Date.now()) / MINUTE_MS)) }
+}
+function jobsAt(state) {
+  const placeId = state.location?.id
+  return JOBS.filter(job => job.locationId === placeId).map(job => {
+    const stat = state.jobStats?.[job.id] || { times: 0 }
+    const bonus = Math.min(0.5, Number(stat.times || 0) * 0.05)
+    const pay = Math.round(job.pay * (1 + bonus))
+    const energy = Number(state.energy ?? 100)
+    const busy = activeActivity(state)
+    const reason = busy ? '手上还有活没干完' : energy < job.energy ? '精力不够，先吃点东西' : ''
+    return { ...job, pay, bonus: Math.round(bonus * 100), times: Number(stat.times || 0), available: !reason, reason }
+  })
+}
+function startActivity(state, payload) {
+  const now = Date.now()
+  state.activity = { ...payload, startedAt: new Date(now).toISOString(), endsAt: new Date(now + Number(payload.minutes || 0) * MINUTE_MS).toISOString() }
+  return state.activity
+}
+function work(config, jobId) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  const busy = activeActivity(state)
+  if (busy) throw new Error('正在' + busy.label + '，等这' + busy.remainMinutes + '分钟做完再说。')
+  const job = JOBS.find(j => j.id === jobId) || jobsAt(state)[0]
+  if (!job) throw new Error('这里没有可以干的活：' + (state.location?.name || '当前地点'))
+  const stat = state.jobStats?.[job.id] || { times: 0 }
+  const bonus = Math.min(0.5, Number(stat.times || 0) * 0.05)
+  const pay = Math.round(job.pay * (1 + bonus))
+  const energy = Number(state.energy ?? 100)
+  if (energy < job.energy) throw new Error('太累了：' + job.name + '要 ' + job.energy + ' 点精力，现在只有 ' + Math.round(energy) + ' 点。先吃点东西或歇一会儿。')
+  startActivity(state, { kind: 'work', jobId: job.id, label: job.name, placeName: state.location?.name, minutes: job.minutes, energyCost: job.energy, moodGain: job.mood, pay })
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'work', job: job.name, pay, minutes: job.minutes, activity: activeActivity(state), note: '这段时间也可以聊天，只是她手上正忙着。', state: withInterior(state) }
+}
+function rest(config, mode = 'nap') {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  const busy = activeActivity(state)
+  if (busy) throw new Error('正在' + busy.label + '，做完再歇。')
+  const comfort = homeComfort(state)
+  const atHome = state.location?.id === 'fish-home'
+  const gain = mode === 'sleep' ? 100 : Math.round((atHome ? 10 : 6) + comfort.score / 8)
+  if (mode === 'sleep') {
+    const clock = gameClock(state)
+    const until = 7
+    const add = ((until - clock.hour + 24) % 24) * 60
+    state.clockOffset = Number(state.clockOffset || 0) + add
+    state.energy = 100
+    state.mood = Math.min(100, Number(state.mood || 50) + 8)
+    state.lastMealAt = new Date().toISOString()
+    state.lastAction = { text: '睡了一觉，天亮了', at: new Date().toISOString() }
+    state.lastResult = { kind: 'sleep', text: '睡到自然醒，精力回满，心情也好了些。' }
+    state.updatedAt = new Date().toISOString()
+    writeState(file, state)
+    return { ok: true, mode: 'rest', activity: null, state: withInterior(state) }
+  }
+  startActivity(state, { kind: 'rest', label: atHome ? '在' + comfort.label + '的小屋歇一会儿' : '在长椅上眯一会儿', placeName: state.location?.name, minutes: atHome ? 20 : 30, energyGain: gain, moodGain: 2 })
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'rest', activity: activeActivity(state), state: withInterior(state) }
+}
+function eat(config, itemId) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  const inventory = Array.isArray(state.inventory) ? state.inventory : []
+  const index = inventory.findIndex(x => x.id === itemId || x.name === itemId || x.instanceId === itemId)
+  if (index < 0) throw new Error('背包里没有这样吃的')
+  const item = inventory[index]
+  const food = item.food || { energy: Number(item.energy || 8), mood: Number(item.mood || 2), minutes: 10 }
+  inventory.splice(index, 1)
+  state.energy = Math.min(100, Number(state.energy || 0) + Number(food.energy || 0))
+  state.mood = Math.min(100, Number(state.mood || 50) + Number(food.mood || 0))
+  state.clockOffset = Number(state.clockOffset || 0) + Number(food.minutes || 10)
+  state.lastMealAt = new Date().toISOString()
+  state.lastAction = { text: '吃了' + item.name, at: new Date().toISOString() }
+  state.lastResult = { kind: 'eat', text: '吃了' + item.name + '，精力 +' + Number(food.energy || 0) + '，心情 +' + Number(food.mood || 0) + '。' }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'eat', item: item.name, energy: state.energy, mood: state.mood, state: withInterior(state) }
+}
+function sell(config, itemId) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  const inventory = Array.isArray(state.inventory) ? state.inventory : []
+  const index = inventory.findIndex(x => x.id === itemId || x.name === itemId || x.instanceId === itemId)
+  if (index < 0) throw new Error('背包里没有这件东西')
+  const item = inventory[index]
+  const price = Number(item.price || 10)
+  const rate = item.decor ? 0.6 : 0.5
+  const gain = Math.max(1, Math.round(price * rate))
+  inventory.splice(index, 1)
+  state.wallet = { ...(state.wallet || {}), balance: Number(state.wallet?.balance ?? state.coins ?? 0) + gain }
+  state.coins = state.wallet.balance
+  state.clockOffset = Number(state.clockOffset || 0) + 10
+  state.lastAction = { text: '卖掉了' + item.name, at: new Date().toISOString() }
+  state.lastResult = { kind: 'sell', text: '把' + item.name + '卖回店里，拿到 ' + gain + ' 镇币。' }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'sell', item: item.name, gain, state: withInterior(state) }
+}
+function plant(config, seedId, plotIndex = null) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  if (state.location?.id !== 'fish-home') throw new Error('要先回小屋，进小院才能种')
+  const inventory = Array.isArray(state.inventory) ? state.inventory : []
+  const index = inventory.findIndex(x => x.id === seedId || x.name === seedId)
+  if (index < 0) throw new Error('背包里没有这种种子（花店、杂货店、药房有卖）')
+  const seed = inventory[index]
+  const cropId = seed.seed || Object.values(CROPS).find(c => c.seed === seed.id)?.id
+  const crop = CROPS[cropId]
+  if (!crop) throw new Error('这不是种子')
+  const field = ensureField(state)
+  const target = plotIndex == null ? field.plots.find(p => !p.cropId) : field.plots[plotIndex]
+  if (!target) throw new Error('小院里没有空着的田了')
+  if (target.cropId) throw new Error('这块地已经种着' + CROPS[target.cropId].name + '了')
+  inventory.splice(index, 1)
+  target.cropId = crop.id
+  target.plantedAt = new Date().toISOString()
+  target.growth = 0
+  target.water = 100
+  target.lastTickAt = new Date().toISOString()
+  target.harvestAt = null
+  state.energy = Math.max(0, Number(state.energy || 0) - 3)
+  state.clockOffset = Number(state.clockOffset || 0) + 5
+  state.lastAction = { text: '在小院种下' + crop.name, at: new Date().toISOString() }
+  state.lastResult = { kind: 'plant', text: '种下' + crop.name + '，' + Math.round(crop.growMinutes / 60) + ' 小时左右能收（游戏时间，浇水会快一些）。' }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'plant', crop: crop.name, plot: target.index, state: withInterior(state) }
+}
+function waterField(config, plotIndex = null) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  if (state.location?.id !== 'fish-home') throw new Error('要先回小屋')
+  const field = ensureField(state)
+  const targets = plotIndex == null ? field.plots.filter(p => p.cropId) : [field.plots[plotIndex]].filter(Boolean)
+  if (!targets.length) throw new Error('小院里还没有种东西')
+  const energy = Number(state.energy ?? 100)
+  if (energy < 3) throw new Error('提不动水壶了，先歇一会儿')
+  for (const plot of targets) plot.water = 100
+  state.energy = Math.max(0, energy - 3)
+  state.clockOffset = Number(state.clockOffset || 0) + 3
+  state.lastAction = { text: '给小院浇了水', at: new Date().toISOString() }
+  state.lastResult = { kind: 'water', text: '给 ' + targets.length + ' 块地浇了水，土是湿的。' }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'water', watered: targets.length, state: withInterior(state) }
+}
+function harvest(config, plotIndex) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  if (state.location?.id !== 'fish-home') throw new Error('要先回小屋')
+  const field = ensureField(state)
+  const plot = field.plots[Number(plotIndex)]
+  if (!plot || !plot.cropId) throw new Error('这块地上没有东西')
+  const crop = CROPS[plot.cropId]
+  const stage = cropStage(plot)
+  if (stage.ratio < 1) throw new Error(crop.name + '还没熟（' + stage.progress + '%），再等等')
+  const energy = Number(state.energy ?? 100)
+  if (energy < 4) throw new Error('累得蹲不下去了，先吃口东西')
+  state.inventory = Array.isArray(state.inventory) ? state.inventory : []
+  state.inventory.push({ id: crop.id, name: crop.name, sprite: crop.id === 'flower' ? 'flowers' : 'box', price: crop.sell, food: crop.eat ? { energy: crop.eat, mood: 2, minutes: 8 } : null, harvestAt: new Date().toISOString() })
+  plot.cropId = null; plot.growth = 0; plot.water = 100; plot.plantedAt = null; plot.harvestAt = null
+  state.energy = Math.max(0, energy - 4)
+  state.clockOffset = Number(state.clockOffset || 0) + 4
+  state.lastAction = { text: '收了一茬' + crop.name, at: new Date().toISOString() }
+  state.lastResult = { kind: 'harvest', text: '收下' + crop.name + '，能卖 ' + crop.sell + ' 镇币' + (crop.eat ? '，也能吃（+ ' + crop.eat + ' 精力）' : '') + '。' }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'harvest', crop: crop.name, sell: crop.sell, state: withInterior(state) }
+}
+
 async function weather(config) { const file = fileOf(config); const state = readTown(file); const w = { ...(state.weather || {}) }; if (w.provider === 'city' && Number.isFinite(Number(w.latitude)) && Number.isFinite(Number(w.longitude))) { try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.latitude}&longitude=${w.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=${encodeURIComponent(w.timezone || 'Asia/Shanghai')}`; const res = await fetch(url, { signal: AbortSignal.timeout(8000) }); if (!res.ok) throw new Error(`weather http ${res.status}`); const data = await res.json(); const c = data.current || {}; w.temperatureC = c.temperature_2m ?? w.temperatureC; w.feelsLikeC = c.apparent_temperature ?? w.feelsLikeC; w.humidity = c.relative_humidity_2m ?? w.humidity; w.windKph = c.wind_speed_10m ?? w.windKph; w.condition = String(c.weather_code ?? w.condition); w.updatedAt = new Date().toISOString(); w.source = 'open-meteo city forecast'; const latest = readState(file); latest.weather = w; latest.updatedAt = new Date().toISOString(); writeState(file, latest); return { ok:true, mode:'weather', weather:w, live:true } } catch (error) { return { ok:true, mode:'weather', weather:w, live:false, error:String(error.message || error), note:'实时天气暂时不可用，返回上次城市级缓存。' } } } return { ok:true, mode:'weather', weather:w, live:false, note:'未配置城市坐标。' } }
 
-export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort }
+export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock }

@@ -1,6 +1,6 @@
 import http from 'node:http'
 import { existsSync, readFileSync } from 'node:fs'
-import { status, act, buy, travel, enter, decorate, work, npcTalk, npcGift, eventSuggestion } from './state.mjs'
+import { status, act, buy, travel, enter, decorate, work, rest, eat, sell, plant, waterField, harvest, npcTalk, npcGift, eventSuggestion } from './state.mjs'
 
 const port = Number(process.env.TOWN_PORT || 18763)
 const host = '127.0.0.1'
@@ -48,13 +48,19 @@ export function startDashboard(config = { stateFile: process.env.DSH_TOWN_LIFE_F
         body += part
         if (Buffer.byteLength(body) > 4096) return send(res, 413, {})
       }
-      const { kind, id, item, action, jobId, npcId, text, mode, room, x, y, rotation, decorAction } = JSON.parse(body)
+      const { kind, id, item, action, jobId, npcId, text, mode, room, x, y, rotation, decorAction, seedId, plotIndex } = JSON.parse(body)
       const state = status(config).state
       if (kind === 'travel') { const current = status(config).state; if (current.travel?.inProgress) throw Error('小渊正在前往另一个地点。'); if (current.openHours && current.openHours[id] === false) throw Error('该地点现在已经关门。'); return send(res, 200, travel(config, id, mode === 'transit' ? 'transit' : 'walk').state) }
       if (kind !== 'event-suggestion' && state.location?.id !== id) throw Error('小渊的位置已变化，请重新进入地点。')
       if (kind === 'buy') return send(res, 200, buy(config, id, item).state)
       if (kind === 'decorate') return send(res, 200, decorate(config, item, { room, x, y, rotation, action: decorAction }).state)
       if (kind === 'work') return send(res, 200, work(config, jobId).state)
+      if (kind === 'rest') return send(res, 200, rest(config, mode === 'sleep' ? 'sleep' : 'nap').state)
+      if (kind === 'eat') return send(res, 200, eat(config, item || id).state)
+      if (kind === 'sell') return send(res, 200, sell(config, item || id).state)
+      if (kind === 'plant') return send(res, 200, plant(config, seedId || item, plotIndex == null ? null : Number(plotIndex)).state)
+      if (kind === 'water') return send(res, 200, waterField(config).state)
+      if (kind === 'harvest') return send(res, 200, harvest(config, Number(plotIndex)).state)
       if (kind === 'npc-talk') return send(res, 200, npcTalk(config, npcId, text).state)
       if (kind === 'npc-gift') { const gifted = npcGift(config, npcId, item); return send(res, 200, { ...gifted.state, noticeText: gifted.reaction }) }
       if (kind === 'event-suggestion') return send(res, 200, eventSuggestion(config))
