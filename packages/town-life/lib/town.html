@@ -3,6 +3,22 @@
 <style>
 *{box-sizing:border-box}body{margin:0;color:#293d34;background:#f3efe5;font:15px/1.6 "Microsoft YaHei",sans-serif}main{max-width:1640px;margin:auto;padding:20px clamp(14px,3vw,52px)}header,footer,.row,.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px}header{border-bottom:1px solid #c9c7b7;padding-bottom:12px}small{color:#5c6d60}h1,h2,h3{font-family:Georgia,"SimSun",serif;margin:.18em 0}h1{font-size:clamp(32px,4vw,52px);letter-spacing:.09em}h3{font-size:16px;margin-top:14px}article{display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,23vw,355px);gap:16px;margin:18px 0;align-items:start}button{font:inherit;color:inherit;cursor:pointer;background:#fcf9ee;border:1px solid #c3c4b0;padding:6px 10px;border-radius:9px}button:hover,button:focus-visible{outline:2px solid #9d7850;outline-offset:1px}button:disabled{opacity:.6}.primary{background:#36594c;color:white}.map,aside{border:1px solid #c6c4af;border-radius:16px;overflow:hidden;background:#fffaf0}.viewport{overflow:auto;max-height:73vh;background:#ddceb3;cursor:grab}.land{position:relative;min-width:770px}.land>img{width:100%;height:auto;display:block;pointer-events:none}.hit{position:absolute;transform:translate(-50%,-100%);width:13%;height:22%;border:0;background:transparent;border-radius:25%}.hit span{position:absolute;left:50%;bottom:0;transform:translateX(-50%);background:#fff7e4ed;color:#403e30;padding:2px 8px;border:1px solid #aa9772;border-radius:16px;white-space:nowrap;font-size:12px}.hit[aria-pressed=true] span{background:#305648;color:white}.traveler{position:absolute;transform:translate(-50%,-100%);pointer-events:none;z-index:3}.traveler img,.fish-avatar img{display:block;width:40px;height:40px;object-fit:cover;border-radius:50%;border:3px solid #fff6d8;box-shadow:0 2px 8px #3d403475}.traveler:after{content:"";position:absolute;left:16px;border:5px solid transparent;border-top-color:#fff6d8}.toolbar{padding:9px 14px;flex-wrap:wrap}.toolbar input{width:86px;vertical-align:middle;accent-color:#44674f}aside{padding:18px;max-height:81vh;overflow:auto}aside p{margin:5px 0 12px}.choices,.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.row{padding:5px 0;border-bottom:1px solid #e4dfd1}.choices button,.row button{font-size:13px}footer{flex-wrap:wrap;border-top:1px solid #c9c7b7;padding-top:12px}footer>div:first-child{display:grid;grid-template-columns:auto 1fr;column-gap:8px}.fish-avatar{grid-row:1/3}#notice{position:sticky;bottom:0;background:#fff5d9;color:#764c2f;border-radius:8px;padding:6px}#notice:empty{display:none}#room{background:radial-gradient(ellipse at center,#fdf6e7,#dbccae);text-align:center;padding:8px}#room[hidden],.viewport[hidden],label[hidden]{display:none}#stage{position:relative;margin:auto;width:min(100%,65vh);aspect-ratio:1;background-size:cover;border-radius:8px;overflow:hidden}.prop,.furniture,.person{position:absolute;transform:translate(-50%,-50%);background:#fff9ebeb;font-size:12px;box-shadow:0 2px 5px #30291942}.prop{border-radius:20px;padding:3px 7px}.furniture{touch-action:none;cursor:move;font-size:22px}.person{border-radius:50%;padding:1px}.person img{width:32px;height:32px;border-radius:50%;display:block}#object-panel{min-height:2.4em;padding:5px}#object-panel button{margin-left:6px}#stats,#activity{color:#536659}#sync{display:block} @media(max-width:850px){article{grid-template-columns:1fr}aside{max-height:none}.viewport{max-height:62vh}.toolbar{padding:7px}.hit span{font-size:11px}main{padding:12px}h1{font-size:34px}}
 .route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.route polyline{fill:none;stroke:#265f55;stroke-width:.65;stroke-dasharray:1.15 .85;stroke-linecap:round;filter:drop-shadow(0 0 .3px white)} #back[hidden]{display:none}
+.furniture{background:none;border:0;padding:0;cursor:grab;filter:drop-shadow(0 6px 5px rgba(90,70,40,.28));transition:filter .15s}
+.furniture .furnimg{position:relative;width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.furniture .fshadow{position:absolute;left:4%;right:4%;bottom:-2%;height:16%;background:radial-gradient(ellipse at center,rgba(70,50,25,.28),rgba(70,50,25,0) 72%);border-radius:50%;z-index:0}
+.furniture .furnimg>.sprite{position:relative;z-index:1}
+.furniture .furnimg .sprite{width:100%!important;height:100%!important}
+.furniture .furnimg img,.furniture .furnimg svg{width:100%;height:100%;object-fit:contain;display:block}
+.furniture:hover{filter:drop-shadow(0 9px 8px rgba(90,70,40,.4))}
+.daily-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.daily-head h3{margin:14px 0 6px}
+.task-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #ddd2bd}
+.task-row.done{opacity:.55}
+.task-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.task-info b{font-size:13px}
+.task-info small{color:#7d6f5b;font-size:11px;line-height:1.35}
+.task-tag{font-size:11px;color:#6c7f5a}
+button.ghost{background:none;border:1px solid #cbbfa6;color:#6f5f45}
 .sprite{display:block;line-height:0;pointer-events:none}
 .sprite svg{width:100%;height:100%;display:block}
 .furniture{position:absolute;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;border-radius:8px;cursor:grab}
@@ -208,6 +224,16 @@ function spriteEl(key,w,h){
   })
   return node
 }
+const FOOTPRINT={sofa:[27,17],armchair:[15,14],bed:[31,26],wardrobe:[14,26],bookshelf:[16,24],shelf:[16,9],cabinet:[16,13],table:[22,16],lowtable:[15,11],desk:[22,14],stool:[8,8],bench:[20,9],rug:[27,18],plant:[8,10],'floor-lamp':[7,11],lamp:[8,9],painting:[10,8],mirror:[7,11],clock:[6,6],radio:[7,6],teapot:[6,5],basket:[8,6],vase:[6,8],hanging:[7,9],flowers:[7,7],cushion:[6,6],blanket:[8,6],'rocking-chair':[15,14],'coat-rack':[7,13],box:[8,8],fruit:[6,5],seed:[6,5]}
+function furnEl(item){
+  const key=item.sprite||spriteGuess(item.name)
+  const [fw,fh]=FOOTPRINT[key]||[10,10]
+  const box=el('div');box.className='furnimg'
+  box.style.width='100%';box.style.height='100%'
+  const shade=el('i');shade.className='fshadow'
+  box.append(shade,spriteEl(key))
+  return box
+}
 function hearts(count){
   const filled=Math.max(0,Math.min(5,Number(count)||0))
   return '♥'.repeat(filled)+'♡'.repeat(5-filled)
@@ -284,6 +310,7 @@ function draw(){
   const shop=state.shops?.find(s=>(s.locationId||s.id)===place.id)
  if(shop){d.append(el('h3','店内物件'));for(const item of shop.items){const row=el('div','');row.className='goods-row';row.append(spriteEl(item.sprite||spriteGuess(item.name),30,30));const object=button(`${item.name} · ${item.price} 镇币`,()=>{$('notice').textContent=`你查看了${item.name}。它在${shop.name}的展示架上。`});row.append(object);if(inside)row.append(control('购买','buy',{item:item.id}));d.append(row)}}
   if(inside&&!state.travel?.inProgress)jobsBox(d,place,control)
+  if(!state.travel?.inProgress)dailyBox(d,place)
   if(inside){
    const npcs=(state.npcs||[]).filter(n=>n.locationId===place.id); if(npcs.length){d.append(el('h3','正在这里的居民'));for(const npc of npcs){const row=el('div','');row.className='row';row.append(el('span',npc.name+' · '+npc.activity),affinityEl(npc.affinity),control('聊几句','npc-talk',{npcId:npc.id,text:'在'+place.name+'见面'}));d.append(row);if(inside){(state.inventory||[]).length&&d.append(giftBox(npc,place))}}}
    const suggest=button('看看此刻发生什么',async()=>{const r=await fetch('/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'event-suggestion'})});const v=await r.json();$('notice').textContent=v.event?.title? v.event.title+'：'+v.event.text : '暂无新的生活建议'});suggest.disabled=busy;d.append(suggest)
@@ -355,6 +382,31 @@ function jobsBox(d,place,control){
     d.append(row)
   }
 }
+function dailyBox(d,place){
+  const act=(label,kind,extra={})=>{const b=button(label,()=>run({id:place.id,kind,...extra}));b.disabled=busy;return b}
+  const daily=state.daily
+  if(!daily||!Array.isArray(daily.tasks))return
+  const head=el('div','');head.className='daily-head'
+  head.append(el('h3','今天的委托'))
+  const reroll=act('换一批 · 剩 '+(daily.rerollsLeft??0),'reroll-tasks',{})
+  reroll.className='ghost'
+  if(!daily.rerollsLeft)reroll.disabled=true
+  head.append(reroll)
+  d.append(head)
+  for(const task of daily.tasks){
+    const row=el('div','');row.className='task-row'+(task.done?' done':'')
+    row.append(spriteEl('notebook',24,24))
+    const info=el('div','');info.className='task-info'
+    info.append(el('b',task.title))
+    const giver=(state.npcs||[]).find(n=>n.id===task.npcId)
+    info.append(el('small',(giver?giver.name:'镇民')+' · '+(state.locations||[]).find(l=>l.id===task.locationId)?.name+' · '+task.pay+' 镇币 · '+task.minutes+' 分钟 · 精力 '+task.energy))
+    if(!task.done&&task.reason)info.append(el('small','· '+task.reason))
+    row.append(info)
+    if(task.done){const tag=el('span','已完成');tag.className='task-tag';row.append(tag)}
+    else{const b=act('接单','accept-task',{taskId:task.id});if(!task.available){b.disabled=true;b.title=task.reason||''}row.append(b)}
+    d.append(row)
+  }
+}
 function yardPanel(d,place,inside){
   const field=state.field
   if(!field||!Array.isArray(field.plots))return
@@ -406,6 +458,18 @@ function drawHome(place,inside){
     r.setAttribute('x',room.x);r.setAttribute('y',room.y);r.setAttribute('width',room.w);r.setAttribute('height',room.h)
     r.setAttribute('fill',room.floor||'#d9c3a0');r.setAttribute('stroke','#8d7a5c');r.setAttribute('stroke-width',1);r.setAttribute('rx',2)
     svg.append(r)
+    for(let i=1;i<4;i++){
+      const line=document.createElementNS(ns,'line')
+      const y=room.y+room.h*i/4
+      line.setAttribute('x1',room.x+1);line.setAttribute('y1',y)
+      line.setAttribute('x2',room.x+room.w-1);line.setAttribute('y2',y)
+      line.setAttribute('stroke','#00000012');line.setAttribute('stroke-width',0.5)
+      svg.append(line)
+    }
+    const shade=document.createElementNS(ns,'rect')
+    shade.setAttribute('x',room.x);shade.setAttribute('y',room.y);shade.setAttribute('width',room.w);shade.setAttribute('height',room.h)
+    shade.setAttribute('fill','none');shade.setAttribute('stroke','#00000018');shade.setAttribute('stroke-width',2);shade.setAttribute('rx',2)
+    svg.append(shade)
     const t=document.createElementNS(ns,'text')
     t.setAttribute('x',room.x+2.5);t.setAttribute('y',room.y+6);t.setAttribute('fill','#6f5f45');t.setAttribute('font-size',3.2);t.textContent=room.name
     svg.append(t)
@@ -420,10 +484,11 @@ function drawHome(place,inside){
   stage.append(svg)
   const scale=Math.max(0.55,Math.min(1.15,(stage.clientWidth||620)/560))
   for(const item of home.items){
-    const model=MODELS[item.sprite]||MODELS.box
-    const n=button('',()=>{})
-    n.className='furniture';n.title=item.name;n.setAttribute('aria-label',item.name)
-    n.append(spriteEl(item.sprite||spriteGuess(item.name),Math.round(model.w*scale),Math.round(model.h*scale)))
+    const n=button('',()=>{}),fp=FOOTPRINT[item.sprite||spriteGuess(item.name)]||[10,10]
+    n.className='furniture';n.title=item.name+(item.comfort?' · 舒适 +'+item.comfort:'');n.setAttribute('aria-label',item.name)
+    n.style.width=Math.round(fp[0]/100*stage.clientWidth)+'px'
+    n.style.height=Math.round(fp[1]/100*stage.clientHeight)+'px'
+    n.append(furnEl(item))
     position(n,item.x??50,item.y??50)
     n.style.transform='translate(-50%,-50%) rotate('+(Number(item.rotation)||0)+'deg)'
     stage.append(n)
@@ -486,6 +551,7 @@ function homePanel(d,place,inside){
   card.append(el('small',comfort.note||''))
   card.append(el('small',home.visitor?('👋 '+home.visitor.name+'正在做客，'+(home.visitor.line||'')):('邻居串门概率约 '+(home.visitCeiling||0)+'%，舒适度越高越常来。')))
   d.append(card)
+  if(!state.travel?.inProgress)dailyBox(d,place)
   const tabs=el('div');tabs.className='room-tabs'
   const all=button('全部',()=>{activeRoom=null;draw()});if(!activeRoom)all.className='on';tabs.append(all)
   for(const room of home.rooms){const b=button(room.name,()=>{activeRoom=room.id;draw()});if(activeRoom===room.id)b.className='on';tabs.append(b)}

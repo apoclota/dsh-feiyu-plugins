@@ -212,7 +212,7 @@ function status(config) { const state = tickWorld(fileOf(config), withInterior(r
  const shownNpcs = state.homeVisitor && state.homeVisitor.npcId
    ? movingNpcs.map(n => n.id === state.homeVisitor.npcId ? { ...n, locationId: homeId, activity: '来小屋串门' } : n)
    : movingNpcs
- const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
+ const openHours = { 'oakbrook-restaurant': hour >= 8 && hour < 22, 'oakbrook-market': hour >= 9 && hour < 20, 'oakbrook-station': true, 'lucky-star': hour >= 9 && hour < 21, 'moonlake-park': hour >= 5 && hour < 23, 'fish-home': true }; for (const place of state.locations || []) if (!(place.id in openHours)) openHours[place.id] = place.kind === 'library' ? hour >= 9 && hour < 20 : place.kind === 'post' ? hour >= 8 && hour < 19 : hour >= 9 && hour < 21; return { ok: true, mode: 'status', state: { ...state, activity: activeActivity(state), jobs: jobsAt(state), field: fieldView(state), daily: dailyView(state), tone: toneOf(state), fullness: fullnessOf(state), clock: gameClock(state), realTime: { iso: now.toISOString(), local: `${hour}:${minute}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }, npcs: shownNpcs.map(n => ({ ...n, affinity: affectionOf(state.relationships?.[n.id]?.score) })),
         home: { rooms: HOME_ROOMS, items: homeDecor, comfort, visitor: state.homeVisitor || null, lastVisit: state.lastVisit || null, visitCeiling: Math.min(55, Math.round((0.1 + comfort.score / 260) * 100)) },
         homeComfortLevels: COMFORT_LEVELS, relationships: Object.fromEntries(Object.entries(state.relationships || {}).map(([id, rel]) => [id, { ...rel, affinity: affectionOf(rel.score) }])), affectionLevels: AFFECTION_LEVELS, itemCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).length, 0), furnitureCount: (state.shops || []).reduce((sum, shop) => sum + (shop.items || []).filter(item => item.decor).length, 0), openHours, weatherEffect: rain ? '雨天：户外活动减少，NPC更常待在室内。' : '适合户外活动。', currentPhase: phase(state) } } }
 function event(config, mode) { const file = fileOf(config); const state = readTown(file); const today = new Date().toISOString().slice(0, 10); const prior = state.lastEvent && String(state.lastEvent.at || '').slice(0, 10); const key = mode === 'surprise' ? '突发' : prior === today ? '偶然' : 'daily'; const picked = choose(state.events?.[key]?.length ? state.events[key] : DEFAULT_EVENTS[key]); state.lastEvent = { ...picked, mode: key, at: new Date().toISOString() }; state.updatedAt = new Date().toISOString(); writeState(file, state); return { ok: true, mode, event: state.lastEvent, state: withInterior(state) } }
@@ -265,6 +265,98 @@ const TONE_BANDS = [
   { min: 10, energy: 'exhausted', voice: '很累', hint: '她很累了：短句、敷衍、想坐下；不要用感叹号，可以拒绝邀约。' },
   { min: 0, energy: 'spent', voice: '几乎没力气', hint: '她几乎没力气了：只回很短的句子，比如“……让我歇会儿”。' }
 ]
+const DAILY_TASK_POOL = [
+  { id: 'd-package', title: '把邮包送到家具行', npcId: 'noah', locationId: 'oakbrook-post', minutes: 12, energy: 5, pay: 26, reward: null },
+  { id: 'd-errand-flour', title: '替面包房领一袋面粉', npcId: 'marta', locationId: 'oakbrook-market', minutes: 10, energy: 5, pay: 24, reward: null },
+  { id: 'd-errand-tool', title: '把修好的刨子送回木匠工作室', npcId: 'cedar', locationId: 'oakbrook-hardware', minutes: 10, energy: 6, pay: 28, reward: null },
+  { id: 'd-shelf-copy', title: '抄一份借书登记表', npcId: 'rue', locationId: 'oakbrook-library', minutes: 15, energy: 4, pay: 22, reward: { id: 'notebook', name: '手账本', sprite: 'notebook', price: 30 } },
+  { id: 'd-herb-sort', title: '给药架上的草药分类贴标', npcId: 'lina', locationId: 'oakbrook-pharmacy', minutes: 12, energy: 5, pay: 25, reward: { id: 'seed-herb', name: '草药种子', sprite: 'seed', price: 40, seed: 'herb' } },
+  { id: 'd-net-mend', title: '帮渔夫补一段渔网', npcId: 'finn', locationId: 'moonlake-park', minutes: 15, energy: 8, pay: 30, reward: null },
+  { id: 'd-window-wash', title: '擦干净临湖那扇窗', npcId: 'marta', locationId: 'oakbrook-restaurant', minutes: 10, energy: 5, pay: 23, reward: null },
+  { id: 'd-flower-bundle', title: '扎三束卖剩的花', npcId: 'lina', locationId: 'oakbrook-flower', minutes: 12, energy: 4, pay: 24, reward: { id: 'flowers', name: '一束蓝花', sprite: 'flowers', price: 18 } },
+  { id: 'd-ticket-count', title: '清点刮刮卡库存', npcId: 'noah', locationId: 'oakbrook-lottery', minutes: 8, energy: 3, pay: 18, reward: null },
+  { id: 'd-bench-wipe', title: '把公园长椅擦一遍', npcId: 'finn', locationId: 'moonlake-park', minutes: 12, energy: 6, pay: 22, reward: null },
+  { id: 'd-bread-tray', title: '把面包一盘盘端到架上', npcId: 'marta', locationId: 'oakbrook-bakery', minutes: 10, energy: 5, pay: 24, reward: { id: 'bread', name: '面包', sprite: 'bread', price: 25, food: { energy: 18, mood: 4, minutes: 10 } } },
+  { id: 'd-cloth-fold', title: '把新到的布叠好', npcId: 'marta', locationId: 'oakbrook-clothing', minutes: 10, energy: 4, pay: 21, reward: null },
+  { id: 'd-swatch', title: '给家具行抄一份色卡', npcId: 'cedar', locationId: 'oakbrook-furniture', minutes: 18, energy: 6, pay: 34, reward: { id: 'paint', name: '一小罐油漆', sprite: 'paint', price: 40 } },
+  { id: 'd-station-board', title: '把班次表重新抄到木板上', npcId: 'noah', locationId: 'oakbrook-station', minutes: 12, energy: 4, pay: 24, reward: null },
+  { id: 'd-herb-water', title: '给药房窗台的盆栽浇水', npcId: 'lina', locationId: 'oakbrook-pharmacy', minutes: 8, energy: 3, pay: 18, reward: { id: 'seed-flower', name: '野花种子', sprite: 'seed', price: 15, seed: 'flower' } },
+  { id: 'd-crate-carry', title: '把两只木箱搬进后仓', npcId: 'cedar', locationId: 'oakbrook-workshop', minutes: 15, energy: 10, pay: 32, reward: null }
+]
+const DAILY_COUNT = 3
+const DAILY_REROLLS = 3
+function dayKeyOf(now) {
+  const shifted = new Date(now.getTime() - 5 * 3600 * 1000)
+  return shifted.toISOString().slice(0, 10)
+}
+function pickDaily(exclude = []) {
+  const pool = DAILY_TASK_POOL.filter(task => !exclude.includes(task.id))
+  const picked = []
+  while (picked.length < DAILY_COUNT && pool.length) {
+    const index = Math.floor(Math.random() * pool.length)
+    picked.push(pool[index])
+    pool.splice(index, 1)
+  }
+  return picked.map(task => ({ ...task, done: false }))
+}
+function ensureDaily(state, now = new Date()) {
+  const key = dayKeyOf(now)
+  const daily = state.daily
+  if (!daily || daily.key !== key || !Array.isArray(daily.tasks) || !daily.tasks.length) {
+    state.daily = { key, tasks: pickDaily(), rerolls: 0, completedAt: null }
+    return true
+  }
+  return false
+}
+function dailyView(state) {
+  ensureDaily(state)
+  const placeId = state.location?.id
+  const busy = activeActivity(state)
+  const energy = Number(state.energy ?? 100)
+  return {
+    key: state.daily.key,
+    rerolls: Number(state.daily.rerolls || 0),
+    rerollsLeft: Math.max(0, DAILY_REROLLS - Number(state.daily.rerolls || 0)),
+    tasks: state.daily.tasks.map(task => {
+      const here = task.locationId === placeId
+      const reason = task.done ? '已经做完了' : busy ? '手上还有活没干完' : !here ? '要去' + (state.locations?.find(x => x.id === task.locationId)?.name || '那个地点') + '才能接' : energy < task.energy ? '精力不够，先吃点东西' : ''
+      return { ...task, here, available: !reason, reason }
+    })
+  }
+}
+function rerollTasks(config) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  ensureDaily(state)
+  if (Number(state.daily.rerolls || 0) >= DAILY_REROLLS) throw new Error('今天的委托已经换过 ' + DAILY_REROLLS + ' 次了，明天会自己刷新的。')
+  state.daily.tasks = pickDaily(state.daily.tasks.map(task => task.id))
+  state.daily.rerolls = Number(state.daily.rerolls || 0) + 1
+  state.lastAction = { text: '换了今天的委托', at: new Date().toISOString() }
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'reroll-tasks', daily: dailyView(state), state: withInterior(state) }
+}
+function acceptTask(config, taskId) {
+  const file = fileOf(config)
+  const state = readTown(file)
+  tickWorld(file, state)
+  ensureDaily(state)
+  const task = state.daily.tasks.find(x => x.id === taskId)
+  if (!task) throw new Error('今天没有这个委托')
+  if (task.done) throw new Error('这个委托已经做完了')
+  const busy = activeActivity(state)
+  if (busy) throw new Error('正在' + busy.label + '，等这' + busy.remainMinutes + '分钟做完再说。')
+  if (state.location?.id !== task.locationId) {
+    const place = state.locations?.find(x => x.id === task.locationId)
+    throw new Error('这个委托要去' + (place?.name || '指定地点') + '交接，现在在' + (state.location?.name || '别处') + '。')
+  }
+  const energy = Number(state.energy ?? 100)
+  if (energy < task.energy) throw new Error('太累了：' + task.title + '要 ' + task.energy + ' 点精力，现在只有 ' + Math.round(energy) + ' 点。先吃点东西或歇一会儿。')
+  startActivity(state, { kind: 'task', taskId: task.id, label: task.title, placeName: state.location?.name, minutes: task.minutes, energyCost: task.energy, moodGain: 2, pay: task.pay, npcId: task.npcId, reward: task.reward || null })
+  state.updatedAt = new Date().toISOString()
+  writeState(file, state)
+  return { ok: true, mode: 'accept-task', task: task.title, pay: task.pay, minutes: task.minutes, activity: activeActivity(state), daily: dailyView(state), note: '这段时间也可以聊天，只是她手上正忙着。', state: withInterior(state) }
+}
 function gameClock(state) {
   const offset = Number(state.clockOffset || 0)
   const at = new Date(Date.now() + offset * 60000)
@@ -333,6 +425,27 @@ function tickWorld(file, state, now = new Date()) {
     } else if (activity.kind === 'rest') {
       state.lastAction = { text: activity.label, at: now.toISOString() }
       state.lastResult = { kind: 'rest', text: activity.label + '，精力 +' + Number(activity.energyGain || 0) + '。' }
+    } else if (activity.kind === 'task') {
+      const pay = Number(activity.pay || 0)
+      state.wallet = { ...(state.wallet || {}), balance: Number(state.wallet?.balance ?? state.coins ?? 0) + pay }
+      state.coins = state.wallet.balance
+      state.relationships = state.relationships || {}
+      const npc = (state.npcs || []).find(n => n.id === activity.npcId) || { name: '镇民' }
+      const prior = state.relationships[activity.npcId] || { score: 0, talks: 0, gifts: 0, tasks: 0 }
+      state.relationships[activity.npcId] = { ...prior, score: Math.min(100, Number(prior.score || 0) + 3), tasks: Number(prior.tasks || 0) + 1, lastTaskAt: now.toISOString() }
+      let rewardText = ''
+      if (activity.reward) {
+        state.inventory = Array.isArray(state.inventory) ? state.inventory : []
+        state.inventory.push({ ...activity.reward, decor: false, boughtAt: now.toISOString() })
+        rewardText = '，' + npc.name + '塞给你' + activity.reward.name
+      }
+      if (state.daily && Array.isArray(state.daily.tasks)) {
+        const task = state.daily.tasks.find(t => t.id === activity.taskId)
+        if (task) task.done = true
+        if (state.daily.tasks.every(t => t.done)) state.daily.completedAt = now.toISOString()
+      }
+      state.lastAction = { text: '帮' + npc.name + '做完' + activity.label + '，拿到 ' + pay + ' 镇币', at: now.toISOString() }
+      state.lastResult = { kind: 'task', pay, text: '做完委托「' + activity.label + '」，' + pay + ' 镇币到手' + rewardText + '，' + npc.name + '好感 +3。' }
     } else if (activity.kind === 'farm') {
       state.lastAction = { text: activity.label, at: now.toISOString() }
       state.lastResult = { kind: 'farm', text: activity.label }
@@ -356,6 +469,7 @@ function tickWorld(file, state, now = new Date()) {
     }
   }
   state.lastClockAt = now.toISOString()
+  if (ensureDaily(state, now)) dirty = true
   if (dirty) { state.updatedAt = now.toISOString(); writeState(file, state) }
   return state
 }
@@ -546,4 +660,4 @@ function harvest(config, plotIndex) {
 
 async function weather(config) { const file = fileOf(config); const state = readTown(file); const w = { ...(state.weather || {}) }; if (w.provider === 'city' && Number.isFinite(Number(w.latitude)) && Number.isFinite(Number(w.longitude))) { try { const url = `https://api.open-meteo.com/v1/forecast?latitude=${w.latitude}&longitude=${w.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=${encodeURIComponent(w.timezone || 'Asia/Shanghai')}`; const res = await fetch(url, { signal: AbortSignal.timeout(8000) }); if (!res.ok) throw new Error(`weather http ${res.status}`); const data = await res.json(); const c = data.current || {}; w.temperatureC = c.temperature_2m ?? w.temperatureC; w.feelsLikeC = c.apparent_temperature ?? w.feelsLikeC; w.humidity = c.relative_humidity_2m ?? w.humidity; w.windKph = c.wind_speed_10m ?? w.windKph; w.condition = String(c.weather_code ?? w.condition); w.updatedAt = new Date().toISOString(); w.source = 'open-meteo city forecast'; const latest = readState(file); latest.weather = w; latest.updatedAt = new Date().toISOString(); writeState(file, latest); return { ok:true, mode:'weather', weather:w, live:true } } catch (error) { return { ok:true, mode:'weather', weather:w, live:false, error:String(error.message || error), note:'实时天气暂时不可用，返回上次城市级缓存。' } } } return { ok:true, mode:'weather', weather:w, live:false, note:'未配置城市坐标。' } }
 
-export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock }
+export { DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, rest, eat, sell, plant, waterField, harvest, weather, npcTalk, npcGift, affectionOf, spriteOf, AFFECTION_LEVELS, eventSuggestion, HOME_ROOMS, COMFORT_LEVELS, comfortOf, comfortLevel, homeComfort, JOBS, CROPS, PLOT_SPOTS, jobsAt, toneOf, fullnessOf, fieldView, gameClock, DAILY_TASK_POOL, DAILY_REROLLS, dailyView, rerollTasks, acceptTask }

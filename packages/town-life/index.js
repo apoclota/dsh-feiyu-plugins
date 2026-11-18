@@ -1,5 +1,5 @@
 import { dashboardUrl, startDashboard } from './lib/dashboard.mjs'
-import { npcGift, DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion, rest, eat, sell, plant, waterField, harvest, jobsAt, JOBS } from './lib/state.mjs'
+import { npcGift, DEFAULT_FILE, status, event, act, enter, travel, buy, decorate, work, weather, npcTalk, eventSuggestion, rest, eat, sell, plant, waterField, harvest, jobsAt, JOBS, dailyView, rerollTasks, acceptTask } from './lib/state.mjs'
 import { loadHostDeps } from './lib/hostdeps.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -100,6 +100,11 @@ function townPromptLine() {
   parts.push('【橡溪镇】' + (s.clock?.label || '') + ' ' + (s.clock?.local || '') + '，她在' + (s.location?.name || '镇上') + '。')
   parts.push('精力 ' + Math.round(Number(s.energy ?? 0)) + '/100（' + (tone.energyLabel || '正常') + '），心情 ' + Math.round(Number(s.mood ?? 0)) + '，' + (s.fullness?.label ? '饱食感：' + s.fullness.label + '。' : ''))
   if (s.activity) parts.push('她正在' + s.activity.label + '，还剩 ' + s.activity.remainMinutes + ' 分钟（这段时间也可以聊天，只是手上忙着）。')
+  if (s.daily && Array.isArray(s.daily.tasks)) {
+    const left = s.daily.tasks.filter(t => !t.done).length
+    if (left) parts.push('今天还有 ' + left + ' 件委托可以去接。')
+    else if (s.daily.tasks.length) parts.push('今天的委托都做完了。')
+  }
   const field = s.field
   if (field && field.planted) {
     const ready = field.plots.filter(p => p.ready).length
@@ -170,6 +175,9 @@ export function apply(ctx, config = {}) {
   reg({ name: 'town_life_plant', description: '在小屋小院里种下一包种子（种子在花店、杂货店、药房买）。生长按游戏时间，浇水会加快。', parameters: { type: 'object', required: ['seedId'], properties: { seedId: { type: 'string' }, plotIndex: { type: 'integer', minimum: 0, maximum: 2 } }, additionalProperties: false } }, async ({ seedId, plotIndex }) => plant(config, seedId, plotIndex))
   reg({ name: 'town_life_water', description: '给小院的作物浇水（一次浇全部，耗 3 点精力、3 分钟）。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => waterField(config))
   reg({ name: 'town_life_harvest', description: '收一块成熟的田：作物进背包，可以卖钱、吃或送人。', parameters: { type: 'object', required: ['plotIndex'], properties: { plotIndex: { type: 'integer', minimum: 0, maximum: 2 } }, additionalProperties: false } }, async ({ plotIndex }) => harvest(config, plotIndex))
+  reg({ name: 'town_life_tasks', description: '看今天的委托：每天自动换一批（3 件），列出委托人、地点、报酬、耗时和精力，以及现在为什么接不了。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => { const snapshot = status(config); return { ok: true, mode: 'tasks', location: snapshot.state.location, daily: snapshot.state.daily } })
+  reg({ name: 'town_life_accept_task', description: '接下来的委托：要人在委托地点、精力够、手上没有别的活；做完自动结算镇币、好感和小礼物。', parameters: { type: 'object', required: ['taskId'], properties: { taskId: { type: 'string' } }, additionalProperties: false } }, async ({ taskId }) => acceptTask(config, taskId))
+  reg({ name: 'town_life_reroll_tasks', description: '换一批今天的委托（每天最多换 3 次，次日自动刷新）。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => rerollTasks(config))
   reg({ name: 'town_life_npc_talk', description: '与当前小镇 NPC 互动并记录关系变化。', parameters: { type: 'object', required: ['npcId'], properties: { npcId: { type: 'string' }, text: { type: 'string', maxLength: 200 } }, additionalProperties: false } }, async ({ npcId, text = '' }) => npcTalk(config, npcId, text))
   reg({ name: 'town_life_npc_gift', description: '把背包里的一件东西送给小镇居民，按喜好提升好感度并返回对方反应。', parameters: { type: 'object', required: ['npcId', 'itemId'], properties: { npcId: { type: 'string' }, itemId: { type: 'string' } }, additionalProperties: false } }, async ({ npcId, itemId }) => npcGift(config, npcId, itemId))
   reg({ name: 'town_life_event_suggestion', description: '根据现实时间、天气和地点给出一条正在流动的生活事件建议。', parameters: { type: 'object', properties: {}, additionalProperties: false } }, async () => eventSuggestion(config))
