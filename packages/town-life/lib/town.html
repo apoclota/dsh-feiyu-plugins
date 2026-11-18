@@ -19,6 +19,25 @@
 .affinity .bar>i{display:block;height:100%;background:#9d7850}
 .npc-tag{display:flex;flex-direction:column;align-items:center;gap:2px}
 .npc-tag .hearts{font-size:11px}
+
+#stage.plan{background:#f3ecd9;display:block;padding:0}
+#stage.plan svg.plan{display:block;width:100%;height:100%}
+.comfort{margin:8px 0 10px;padding:8px 10px;border:1px solid #e0d6c0;border-radius:10px;background:#fbf7ee}
+.comfort-head{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:#3f4a42}
+.comfort-head b{font-size:15px}
+.comfort .bar{display:block;height:7px;background:#e7dfcb;border-radius:5px;overflow:hidden;margin:6px 0 4px}
+.comfort .bar>i{display:block;height:100%;background:#b08a58}
+.room-tabs{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 8px}
+.room-tabs button{font-size:12px;padding:4px 9px}
+.room-tabs button.on{background:#e8dcc0;border-color:#b09b74;font-weight:600}
+.furn-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto auto;gap:6px;align-items:center;margin:5px 0;font-size:12px}
+.furn-row .sprite{width:26px;height:26px}
+.furn-row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+.furn-row button{padding:3px 7px;font-size:12px;white-space:nowrap;margin:0}
+.furn-row.owned{grid-template-columns:26px minmax(0,1fr) auto}
+.person.visitor .face{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;background:#f2ddbf;color:#7a5b34;font-size:13px;font-weight:700;border:2px solid #c9a97c;box-sizing:border-box}
+#stage.plan .furniture{cursor:grab}
+#stage.plan .furniture:hover{filter:brightness(1.06) drop-shadow(0 4px 5px rgba(40,32,20,.25))}
 </style><main><header><div><small>月镜湖畔 ／ 生活地图</small><h1>橡溪镇</h1></div><div><small id="sync" role="status">连接中</small></div></header>
 <article><section class="map" aria-label="小镇地图"><div class="viewport" id="viewport"><div class="land" id="land"><img width="1536" height="1024" alt="沿月镜湖展开的立体小镇，湖边木屋、商业街与南侧铁路相连"><div id="pins" aria-label="小镇与小渊位置"></div></div></div><section id="room" hidden><div id="stage"></div><div id="object-panel" aria-live="polite"></div></section><div class="toolbar"><button id="back" hidden>返回街区</button><label id="zoom-label">地图缩放 <input id="zoom" type="range" min="100" max="200" step="25" value="100"></label><button id="locate">定位小渊</button></div></section>
 <aside><small>地点手册</small><div id="details"></div><p id="notice" role="status"></p></aside></article><footer><div><small>居民动态</small><h2 id="resident">小渊</h2><small id="map-help"></small></div><div id="stats"></div></footer><p id="activity"></p></main>
@@ -228,7 +247,7 @@ function draw(){
  d.append(el('small',places[blocks[place.id]]||'街区'),el('h2',place.name),el('p',place.description||''))
  const inside=place.id===here&&!trip
  if(!roomOpen){d.append(button('查看'+(place.id==='moonlake-park'?'湖岸亭':'室内'),()=>select(place.id,true)))}
- else {d.append(el('p',place.interior?.detail||''));drawRoom(place,inside)}
+  else {d.append(el('p',place.interior?.detail||''));if(place.id==='fish-home'){drawHome(place,inside);homePanel(d,place,inside);return}drawRoom(place,inside)}
  function control(label,kind,extra={}){const b=button(label,()=>run({id:place.id,kind,...extra}));b.disabled=busy;return b}
  if(!inside && !state.travel?.inProgress){const travelBox=el('div','');travelBox.className='choices';const walk=control('步行进入 · '+(place.walkMinutes||0)+' 分钟','travel',{mode:'walk'});walk.className='primary';travelBox.append(walk);if(place.transitMinutes){travelBox.append(control('交通到达 · '+place.transitMinutes+' 分钟','travel',{mode:'transit'}))}d.append(travelBox)} else if(state.travel?.inProgress){d.append(el('p',`正在前往${locs.find(p=>p.id===state.travel.inProgress.to)?.name||'目的地'}，请等待行程完成。`))}
  else {const group=el('div','');group.className='choices';for(const action of activities[here]||['在附近走走'])group.append(control(action,'act',{action}));d.append(group)}
@@ -259,6 +278,145 @@ const objects=[
  [['公告牌',29,43],['纪念票',51,61],['海报架',75,53]],
  [['站台钟',66,32],['检票口',81,61],['候车椅',38,75]]
 ]
+let pendingItem=null,activeRoom=null
+function currentHome(){const home=state.home||{};return {rooms:home.rooms||[],items:home.items||state.homeDecor||[],comfort:home.comfort||{score:0,label:'简陋',note:'',progress:0,next:null},visitor:home.visitor||null,visitCeiling:home.visitCeiling||0}}
+function roomIdOf(rooms,name){const room=(rooms||[]).find(r=>r.name===name||r.id===name);return room?room.id:null}
+function roomAt(rooms,x,y){
+  const list=rooms||[]
+  const hit=list.find(r=>x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h)
+  if(hit)return hit.name
+  let best=list[0],bestD=Infinity
+  for(const r of list){const dx=x-(r.x+r.w/2),dy=y-(r.y+r.h/2),d=dx*dx+dy*dy;if(d<bestD){bestD=d;best=r}}
+  return best?best.name:'客厅'
+}
+function panelForItem(item,id,place){
+  const panel=$('object-panel');panel.replaceChildren()
+  panel.append(el('strong',item.name+'　'),el('span',(item.room||'小屋')+' · 舒适度 +'+(item.comfort||0)))
+  panel.append(button('左转',()=>run({kind:'decorate',id:place.id,item:id,decorAction:'rotate',rotation:(Number(item.rotation)||0)-15})))
+  panel.append(button('右转',()=>run({kind:'decorate',id:place.id,item:id,decorAction:'rotate',rotation:(Number(item.rotation)||0)+15})))
+  panel.append(button('收回背包',()=>run({kind:'decorate',id:place.id,item:id,decorAction:'remove'})))
+}
+function visitorFace(visitor){
+  const face=el('div');face.className='face'
+  face.textContent=(visitor.name||'客').slice(0,1)
+  face.title=visitor.name||'客人'
+  return face
+}
+function drawHome(place,inside){
+  const stage=$('stage'),home=currentHome()
+  stage.replaceChildren();stage.classList.add('plan');stage.style.backgroundImage='none';delete stage.dataset.scene
+  const ns='http://www.w3.org/2000/svg'
+  const svg=document.createElementNS(ns,'svg')
+  svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('class','plan')
+  const bg=document.createElementNS(ns,'rect');bg.setAttribute('width',100);bg.setAttribute('height',100);bg.setAttribute('fill','#f3ecd9');svg.append(bg)
+  for(const room of home.rooms){
+    const r=document.createElementNS(ns,'rect')
+    r.setAttribute('x',room.x);r.setAttribute('y',room.y);r.setAttribute('width',room.w);r.setAttribute('height',room.h)
+    r.setAttribute('fill',room.floor||'#d9c3a0');r.setAttribute('stroke','#8d7a5c');r.setAttribute('stroke-width',1);r.setAttribute('rx',2)
+    svg.append(r)
+    const t=document.createElementNS(ns,'text')
+    t.setAttribute('x',room.x+2.5);t.setAttribute('y',room.y+6);t.setAttribute('fill','#6f5f45');t.setAttribute('font-size',3.2);t.textContent=room.name
+    svg.append(t)
+  }
+  const doors=[[56.2,18,2.6,9],[56.2,64,2.6,9],[72,40.4,9,3],[22,60.4,9,3]]
+  for(const [x,y,w,h] of doors){
+    const d=document.createElementNS(ns,'rect')
+    d.setAttribute('x',x);d.setAttribute('y',y);d.setAttribute('width',w);d.setAttribute('height',h)
+    d.setAttribute('fill','#f7f1e2');d.setAttribute('rx',1.2)
+    svg.append(d)
+  }
+  stage.append(svg)
+  const scale=Math.max(0.55,Math.min(1.15,(stage.clientWidth||620)/560))
+  for(const item of home.items){
+    const model=MODELS[item.sprite]||MODELS.box
+    const n=button('',()=>{})
+    n.className='furniture';n.title=item.name;n.setAttribute('aria-label',item.name)
+    n.append(spriteEl(item.sprite||spriteGuess(item.name),Math.round(model.w*scale),Math.round(model.h*scale)))
+    position(n,item.x??50,item.y??50)
+    n.style.transform='translate(-50%,-50%) rotate('+(Number(item.rotation)||0)+'deg)'
+    stage.append(n)
+    if(!inside)continue
+    const id=item.instanceId||item.id
+    let start=null
+    const point=e=>{const b=stage.getBoundingClientRect();return [Math.round((e.clientX-b.left)/b.width*100),Math.round((e.clientY-b.top)/b.height*100)].map(v=>Math.max(2,Math.min(98,v)))}
+    n.onpointerdown=e=>{if(busy)return;dragging=true;start=[e.clientX,e.clientY];n.setPointerCapture(e.pointerId)}
+    n.onpointermove=e=>{if(start)position(n,...point(e))}
+    n.onpointerup=e=>{
+      if(!start)return
+      const moved=Math.hypot(e.clientX-start[0],e.clientY-start[1])>4
+      dragging=false;start=null
+      const [x,y]=point(e)
+      if(moved)run({kind:'decorate',id:place.id,item:id,decorAction:'move',room:roomAt(home.rooms,x,y),x,y})
+      else panelForItem(item,id,place)
+    }
+    n.onpointercancel=()=>{start=null;dragging=false;draw()}
+  }
+  if(home.visitor){
+    const person=el('div');person.className='person visitor';person.append(visitorFace(home.visitor))
+    position(person,46,52);stage.append(person)
+    const bubble=el('div',home.visitor.line||(home.visitor.name+'来小屋串门'));bubble.className='prop visit'
+    position(bubble,46,40);stage.append(bubble)
+  }
+  if(inside){
+    const me=el('div');me.className='person';me.append(avatar())
+    position(me,home.visitor?26:46,home.visitor?44:44);stage.append(me)
+  }
+  if(pendingItem&&inside){
+    $('notice').textContent='点平面图上想放的位置：'+pendingItem.name
+    stage.onclick=e=>{
+      if(e.target.closest('.furniture'))return
+      const b=stage.getBoundingClientRect()
+      const x=Math.max(2,Math.min(98,Math.round((e.clientX-b.left)/b.width*100)))
+      const y=Math.max(2,Math.min(98,Math.round((e.clientY-b.top)/b.height*100)))
+      const item=pendingItem;pendingItem=null;stage.onclick=null
+      run({kind:'decorate',id:place.id,item:item.id,decorAction:'place',room:roomAt(home.rooms,x,y),x,y})
+    }
+  } else stage.onclick=null
+}
+function homePanel(d,place,inside){
+  const home=currentHome(),comfort=home.comfort||{}
+  const card=el('div');card.className='comfort'
+  const head=el('div');head.className='comfort-head'
+  head.append(el('strong','舒适度 · '+(comfort.label||'简陋')),el('span',(comfort.score||0)+' 点'+(comfort.next?' → '+comfort.next:'') ))
+  card.append(head)
+  const bar=el('div');bar.className='bar';const fill=document.createElement('i')
+  fill.style.width=Math.round((Number(comfort.progress)||0)*100)+'%';bar.append(fill);card.append(bar)
+  card.append(el('small',comfort.note||''))
+  card.append(el('small',home.visitor?('👋 '+home.visitor.name+'正在做客，'+(home.visitor.line||'')):('邻居串门概率约 '+(home.visitCeiling||0)+'%，舒适度越高越常来。')))
+  d.append(card)
+  const tabs=el('div');tabs.className='room-tabs'
+  const all=button('全部',()=>{activeRoom=null;draw()});if(!activeRoom)all.className='on';tabs.append(all)
+  for(const room of home.rooms){const b=button(room.name,()=>{activeRoom=room.id;draw()});if(activeRoom===room.id)b.className='on';tabs.append(b)}
+  d.append(tabs)
+  const items=home.items.filter(item=>!activeRoom||roomIdOf(home.rooms,item.room)===activeRoom)
+  d.append(el('h3','已有家具 · '+items.length+' 件'))
+  if(!items.length)d.append(el('small','这间还空着，去家具行挑一件。'))
+  for(const item of items){
+    const row=el('div');row.className='furn-row'
+    row.append(spriteEl(item.sprite||spriteGuess(item.name),26,26),el('span',item.name+' · '+(item.room||'小屋')+' · +'+(item.comfort||0)))
+    if(inside){
+      row.append(button('旋转',()=>run({kind:'decorate',id:place.id,item:item.instanceId||item.id,decorAction:'rotate',rotation:(Number(item.rotation)||0)+15})))
+      row.append(button('收回',()=>run({kind:'decorate',id:place.id,item:item.instanceId||item.id,decorAction:'remove'})))
+    }
+    d.append(row)
+  }
+  const owned=(state.inventory||[]).filter(item=>item.decor)
+  d.append(el('h3','随身可布置 · '+owned.length+' 件'))
+  if(!owned.length)d.append(el('small','背包里没有家具，商店买来的沙发、灯、地毯都能布置。'))
+  for(const item of owned){
+    const row=el('div');row.className='furn-row owned'
+    row.append(spriteEl(item.sprite||spriteGuess(item.name),26,26),el('span',item.name))
+    if(inside){const b=button('布置',()=>{pendingItem=item;draw()});row.append(b)}
+    d.append(row)
+  }
+  if(inside){
+    const acts=el('div');acts.className='choices'
+    for(const action of ['在客厅歇一会儿','在小书桌写日记','给窗边的花浇水']){
+      const b=button(action,()=>run({kind:'act',id:place.id,action}));b.disabled=busy;acts.append(b)
+    }
+    d.append(acts)
+  }
+}
 function giftBox(npc,place){
   const box=el('div');box.className='choices'
   const items=(state.inventory||[]).slice(-3)
