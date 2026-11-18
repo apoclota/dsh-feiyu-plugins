@@ -37,7 +37,19 @@ const EXTENDED_SHOPS = [
     { id: 'painting', name: '湖景挂画', price: 110, mood: 13, decor: true, sprite: 'painting' },
     { id: 'floor-lamp', name: '布罩落地灯', price: 100, mood: 12, decor: true, sprite: 'floor-lamp' },
     { id: 'radio', name: '旧收音机', price: 130, mood: 14, decor: true, sprite: 'radio' },
-    { id: 'desk', name: '写字桌', price: 190, mood: 15, decor: true, sprite: 'desk' }
+    { id: 'desk', name: '写字桌', price: 190, mood: 15, decor: true, sprite: 'desk' },
+    { id: 'nightstand', name: '床头柜', price: 85, mood: 8, decor: true, sprite: 'nightstand' },
+    { id: 'vanity', name: '梳妆台', price: 175, mood: 13, decor: true, sprite: 'vanity' },
+    { id: 'fireplace', name: '小壁炉', price: 240, mood: 20, decor: true, sprite: 'fireplace' },
+    { id: 'stove', name: '老式灶台', price: 210, mood: 16, decor: true, sprite: 'stove' },
+    { id: 'sink', name: '白瓷水槽', price: 130, mood: 10, decor: true, sprite: 'sink' },
+    { id: 'counter', name: '厨房台面', price: 150, mood: 12, decor: true, sprite: 'counter' },
+    { id: 'fridge', name: '旧冰箱', price: 260, mood: 18, decor: true, sprite: 'fridge' },
+    { id: 'screen', name: '木框屏风', price: 140, mood: 11, decor: true, sprite: 'screen' },
+    { id: 'shoe-cabinet', name: '门边鞋柜', price: 95, mood: 9, decor: true, sprite: 'shoe-cabinet' },
+    { id: 'desk-chair', name: '书桌椅', price: 110, mood: 10, decor: true, sprite: 'desk-chair' },
+    { id: 'wall-shelf', name: '墙上隔板', price: 70, mood: 7, decor: true, sprite: 'wall-shelf' },
+    { id: 'wall-lamp', name: '壁灯', price: 60, mood: 8, decor: true, sprite: 'wall-lamp' }
   ] }
 ]
 const EXTRA_ITEMS = {
@@ -167,7 +179,7 @@ const HOME_ROOMS = [
   { id: 'kitchen', name: '厨房', x: 3, y: 62, w: 26, h: 33, floor: '#c8b794' },
   { id: 'yard', name: '小院', x: 31, y: 62, w: 25, h: 33, floor: '#b9a67f' }
 ]
-const COMFORT_BY_SPRITE = { sofa: 9, armchair: 6, bed: 12, table: 5, lowtable: 4, desk: 5, stool: 2, bookshelf: 6, shelf: 4, cabinet: 4, wardrobe: 4, rug: 5, mirror: 3, painting: 3, clock: 2, 'floor-lamp': 4, lamp: 3, plant: 3, vase: 2, hanging: 2, flowers: 2, candle: 1, curtain: 3, cushion: 2, blanket: 2, bench: 2, 'rocking-chair': 4, 'coat-rack': 2, teapot: 1, basket: 1, frame: 1, radio: 3 }
+const COMFORT_BY_SPRITE = { sofa: 9, armchair: 6, bed: 12, table: 5, lowtable: 4, desk: 5, stool: 2, bookshelf: 6, shelf: 4, cabinet: 4, wardrobe: 4, rug: 5, mirror: 3, painting: 3, clock: 2, 'floor-lamp': 4, lamp: 3, plant: 3, vase: 2, hanging: 2, flowers: 2, candle: 1, curtain: 3, cushion: 2, blanket: 2, bench: 2, 'rocking-chair': 4, 'coat-rack': 2, teapot: 1, basket: 1, frame: 1, radio: 3, nightstand: 3, vanity: 4, fireplace: 7, stove: 4, sink: 3, counter: 4, fridge: 5, screen: 3, 'shoe-cabinet': 2, 'desk-chair': 3, 'wall-shelf': 2, 'wall-lamp': 2 }
 const COMFORT_LEVELS = [
   { min: 0, label: '简陋', note: '只有几件必需品。' },
   { min: 10, label: '朴素', note: '能住，但还缺点什么。' },
